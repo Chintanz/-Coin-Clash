@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Coin Clash - Multiplayer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>🪙 Coin Clash</h1>
+        <p>Race other players to collect the most coins.</p>
+      </div>
+      <div id="status">Connecting…</div>
+    </header>
+
+    <section class="rules">
+      <strong>Rules:</strong>
+      Move with <kbd>WASD</kbd> or <kbd>Arrow Keys</kbd>. Touch the gold coin to score 1 point.
+      Everyone plays in the same live arena. The player with the most points when the 60-second round ends wins.
+    </section>
+
+    <section class="game-wrap">
+      <canvas id="game" width="900" height="600"></canvas>
+      <div id="overlay" class="hidden"></div>
+    </section>
+
+    <section class="scoreboard">
+      <h2>Live scoreboard</h2>
+      <div id="scores"></div>
+    </section>
+
+    <p class="tip">Open this same URL on another phone, tablet or computer to join the same game.</p>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
