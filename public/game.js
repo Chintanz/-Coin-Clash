@@ -1,3 +1,11 @@
+socket.on("roundStarted", data => {
+  console.log("Round started:", data.roundNumber);
+});
+
+socket.on("roundEnded", data => {
+  console.log("Round ended:", data.roundNumber);
+});
+
 const socket = io();
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
