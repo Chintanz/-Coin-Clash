@@ -23,8 +23,11 @@ const ROUND_SECONDS = 60;
 const colors = ["#ff5c5c", "#4da6ff", "#ffd84d", "#8ee35f", "#c77dff", "#ff9f43"];
 const players = new Map();
 let coin = spawnCoin();
-let roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
 let roundNumber = 1;
+
+// ----------------------
+// Utility Functions
+// ----------------------
 
 function spawnCoin() {
   return {
@@ -50,25 +53,20 @@ function publicState() {
     width: WIDTH,
     height: HEIGHT,
     players: [...players.values()].map(p => ({
-      id: p.id, x: p.x, y: p.y, color: p.color, score: p.score
+      id: p.id,
+      x: p.x,
+      y: p.y,
+      color: p.color,
+      score: p.score
     })),
     coin,
-    roundEndsAt,
     roundNumber
   };
 }
 
-function resetRound() {
-  players.forEach(p => {
-    p.score = 0;
-    p.x = 70 + Math.random() * (WIDTH - 140);
-    p.y = 120 + Math.random() * (HEIGHT - 170);
-    p.keys = {};
-  });
-  coin = spawnCoin();
-  roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
-  roundNumber++;
-}
+// ----------------------
+// Socket Connections
+// ----------------------
 
 io.on("connection", socket => {
   if (players.size >= 6) {
@@ -100,9 +98,13 @@ io.on("connection", socket => {
   });
 });
 
+// ----------------------
+// Round System
+// ----------------------
+
 function startRound() {
   roundRunning = true;
-  roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
+  const roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
 
   io.emit("roundStarted", { roundNumber });
 
@@ -126,7 +128,8 @@ function startRound() {
 
       if (dx || dy) {
         const len = Math.hypot(dx, dy);
-        dx /= len; dy /= len;
+        dx /= len;
+        dy /= len;
         p.x += dx * SPEED * dt;
         p.y += dy * SPEED * dt;
       }
@@ -161,6 +164,7 @@ function endRound() {
     p.y = 120 + Math.random() * (HEIGHT - 170);
     p.keys = {};
   });
+
   coin = spawnCoin();
   roundNumber++;
 
@@ -169,6 +173,10 @@ function endRound() {
     startRound();
   }, 3000);
 }
+
+// ----------------------
+// Start Game Server
+// ----------------------
 
 startRound();
 
