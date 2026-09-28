@@ -1,3 +1,6 @@
+let roundInterval = null;
+let roundRunning = false;
+
 const express = require("express");
 const http = require("http");
 const path = require("path");
@@ -97,36 +100,77 @@ io.on("connection", socket => {
   });
 });
 
-let last = Date.now();
-setInterval(() => {
-  const now = Date.now();
-  const dt = Math.min((now - last) / 1000, 0.05);
-  last = now;
+function startRound() {
+  roundRunning = true;
+  roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
 
-  if (now >= roundEndsAt) resetRound();
+  io.emit("roundStarted", { roundNumber });
 
-  for (const p of players.values()) {
-    let dx = (p.keys.right ? 1 : 0) - (p.keys.left ? 1 : 0);
-    let dy = (p.keys.down ? 1 : 0) - (p.keys.up ? 1 : 0);
+  let last = Date.now();
 
-    if (dx || dy) {
-      const len = Math.hypot(dx, dy);
-      dx /= len; dy /= len;
-      p.x += dx * SPEED * dt;
-      p.y += dy * SPEED * dt;
+  roundInterval = setInterval(() => {
+    const now = Date.now();
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    // End round at exactly 60 seconds
+    if (now >= roundEndsAt) {
+      endRound();
+      return;
     }
 
-    p.x = Math.max(PLAYER_RADIUS, Math.min(WIDTH - PLAYER_RADIUS, p.x));
-    p.y = Math.max(PLAYER_RADIUS + 50, Math.min(HEIGHT - PLAYER_RADIUS, p.y));
+    // Movement + coin logic
+    for (const p of players.values()) {
+      let dx = (p.keys.right ? 1 : 0) - (p.keys.left ? 1 : 0);
+      let dy = (p.keys.down ? 1 : 0) - (p.keys.up ? 1 : 0);
 
-    if (Math.hypot(p.x - coin.x, p.y - coin.y) < PLAYER_RADIUS + COIN_RADIUS) {
-      p.score++;
-      coin = spawnCoin();
+      if (dx || dy) {
+        const len = Math.hypot(dx, dy);
+        dx /= len; dy /= len;
+        p.x += dx * SPEED * dt;
+        p.y += dy * SPEED * dt;
+      }
+
+      p.x = Math.max(PLAYER_RADIUS, Math.min(WIDTH - PLAYER_RADIUS, p.x));
+      p.y = Math.max(PLAYER_RADIUS + 50, Math.min(HEIGHT - PLAYER_RADIUS, p.y));
+
+      if (Math.hypot(p.x - coin.x, p.y - coin.y) < PLAYER_RADIUS + COIN_RADIUS) {
+        p.score++;
+        coin = spawnCoin();
+      }
     }
+
+    io.emit("state", publicState());
+  }, 50);
+}
+
+function endRound() {
+  roundRunning = false;
+
+  if (roundInterval) {
+    clearInterval(roundInterval);
+    roundInterval = null;
   }
 
-  io.emit("state", publicState());
-}, 50);
+  io.emit("roundEnded", { roundNumber });
+
+  // Reset players + coin
+  players.forEach(p => {
+    p.score = 0;
+    p.x = 70 + Math.random() * (WIDTH - 140);
+    p.y = 120 + Math.random() * (HEIGHT - 170);
+    p.keys = {};
+  });
+  coin = spawnCoin();
+  roundNumber++;
+
+  // Start next round after 3 seconds
+  setTimeout(() => {
+    startRound();
+  }, 3000);
+}
+
+startRound();
 
 server.listen(PORT, () => {
   console.log(`Coin Clash running on port ${PORT}`);
