@@ -1,6 +1,6 @@
 {
-  "name": "multiplayer-coin-clash",
-  "version": "1.1.0",
+  "name": "coin-clash",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "start": "node server.js",
