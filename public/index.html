@@ -2,14 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#10131a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Coin Clash - Multiplayer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main>
     <header>
-      <div>
+      <div class="brand">
         <h1>🪙 Coin Clash</h1>
         <p>Race other players to collect the most coins.</p>
       </div>
@@ -18,22 +22,37 @@
 
     <section class="rules">
       <strong>Rules:</strong>
-      Move with <kbd>WASD</kbd> or <kbd>Arrow Keys</kbd>. Touch the gold coin to score 1 point.
-      Everyone plays in the same live arena. The player with the most points when the 60-second round ends wins.
+      <span class="desktop-help">Move with <kbd>WASD</kbd> or <kbd>Arrow Keys</kbd>.</span>
+      <span class="mobile-help">Use the on-screen controls.</span>
+      Touch the gold coin to score 1 point. The player with the most points when the 60-second round ends wins.
     </section>
 
-    <section class="game-wrap">
+    <section class="game-wrap" id="gameWrap">
       <canvas id="game" width="900" height="600"></canvas>
       <div id="overlay" class="hidden"></div>
     </section>
 
+    <section class="mobile-controls" aria-label="Mobile movement controls">
+      <div class="dpad">
+        <button class="control up" data-dir="up" aria-label="Move up">▲</button>
+        <button class="control left" data-dir="left" aria-label="Move left">◀</button>
+        <button class="control down" data-dir="down" aria-label="Move down">▼</button>
+        <button class="control right" data-dir="right" aria-label="Move right">▶</button>
+      </div>
+      <div class="mobile-note">Hold a direction to move</div>
+    </section>
+
     <section class="scoreboard">
-      <h2>Live scoreboard</h2>
+      <div class="score-title-row">
+        <h2>Live scoreboard</h2>
+        <span id="playerCount"></span>
+      </div>
       <div id="scores"></div>
     </section>
 
-    <p class="tip">Open this same URL on another phone, tablet or computer to join the same game.</p>
+    <p class="tip">Open this same URL on another phone, tablet or computer to join the same live game.</p>
   </main>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="game.js"></script>
 </body>
