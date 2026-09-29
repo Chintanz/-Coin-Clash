@@ -1,227 +1,27 @@
-const socket = io();
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-const statusEl = document.getElementById("status");
-const scoresEl = document.getElementById("scores");
-const playerCountEl = document.getElementById("playerCount");
-const overlay = document.getElementById("overlay");
-
-let myId = null;
-let state = null;
-let keys = {
-  up: false,
-  down: false,
-  left: false,
-  right: false
-};
-
-socket.on("welcome", data => {
-  myId = data.id;
-  statusEl.textContent = "🟢 Connected";
-});
-
-socket.on("full", () => {
-  statusEl.textContent = "Arena full";
-  overlay.classList.remove("hidden");
-  overlay.innerHTML = "This game is full.<br><small>Try again later.</small>";
-});
-
-socket.on("connect", () => {
-  statusEl.textContent = "🟢 Connected";
-});
-
-socket.on("disconnect", () => {
-  statusEl.textContent = "🔴 Disconnected";
-});
-
-socket.on("state", s => {
-  state = s;
-  renderScores();
-});
-
-const keyMap = {
-  w: "up",
-  ArrowUp: "up",
-  s: "down",
-  ArrowDown: "down",
-  a: "left",
-  ArrowLeft: "left",
-  d: "right",
-  ArrowRight: "right"
-};
-
-window.addEventListener("keydown", e => {
-  const direction = keyMap[e.key];
-  if (!direction) return;
-  e.preventDefault();
-  if (!keys[direction]) {
-    keys[direction] = true;
-    sendInput();
-  }
-});
-
-window.addEventListener("keyup", e => {
-  const direction = keyMap[e.key];
-  if (!direction) return;
-  e.preventDefault();
-  if (keys[direction]) {
-    keys[direction] = false;
-    sendInput();
-  }
-});
-
-window.addEventListener("blur", releaseAllControls);
-
-function releaseAllControls() {
-  let changed = false;
-  for (const direction of Object.keys(keys)) {
-    if (keys[direction]) {
-      keys[direction] = false;
-      changed = true;
-    }
-  }
-  document.querySelectorAll(".control.active").forEach(btn => btn.classList.remove("active"));
-  if (changed) sendInput();
-}
-
-function sendInput() {
-  socket.emit("input", keys);
-}
-
-// Mobile / tablet touch controls.
-// Pointer Events let this work with touchscreens and also mouse/pen input.
-document.querySelectorAll(".control").forEach(button => {
-  const direction = button.dataset.dir;
-
-  const press = e => {
-    e.preventDefault();
-    button.setPointerCapture?.(e.pointerId);
-    button.classList.add("active");
-    keys[direction] = true;
-    sendInput();
-  };
-
-  const release = e => {
-    e.preventDefault();
-    button.classList.remove("active");
-    keys[direction] = false;
-    sendInput();
-  };
-
-  button.addEventListener("pointerdown", press);
-  button.addEventListener("pointerup", release);
-  button.addEventListener("pointercancel", release);
-  button.addEventListener("lostpointercapture", release);
-});
-
-// Prevent accidental page scrolling while using the game area.
-document.getElementById("gameWrap").addEventListener("touchmove", e => {
-  e.preventDefault();
-}, { passive: false });
-
-function renderScores() {
-  if (!state) return;
-
-  const remaining = Math.max(0, Math.ceil((state.roundEndsAt - Date.now()) / 1000));
-  statusEl.textContent = `🟢 Live · Round ${state.roundNumber} · ${remaining}s`;
-  playerCountEl.textContent = `${state.players.length}/6 players`;
-
-  const sorted = [...state.players].sort((a, b) => b.score - a.score);
-
-  scoresEl.innerHTML = sorted.map((p, i) =>
-    `<div class="score ${p.id === myId ? "me" : ""}">
-      <span style="color:${p.color}">●</span>
-      <span>${p.id === myId ? "<strong>You</strong>" : "Player " + (i + 1)}</span>
-      <strong class="score-value">${p.score}</strong>
-    </div>`
-  ).join("");
-}
-
-function drawArena() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = "#111722";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = "#1d2633";
-  ctx.lineWidth = 1;
-
-  for (let x = 0; x < canvas.width; x += 45) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
-  }
-
-  for (let y = 50; y < canvas.height; y += 45) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
-    ctx.stroke();
-  }
-
-  if (!state) return;
-
-  ctx.fillStyle = "#171e2a";
-  ctx.fillRect(0, 0, canvas.width, 50);
-  ctx.fillStyle = "#aeb8c8";
-  ctx.font = "bold 18px system-ui";
-  ctx.fillText("COLLECT THE COIN", 18, 32);
-
-  const c = state.coin;
-  ctx.beginPath();
-  ctx.arc(c.x, c.y, 10, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffd84d";
-  ctx.fill();
-  ctx.strokeStyle = "#fff2a3";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  ctx.fillStyle = "#7d5a00";
-  ctx.font = "bold 11px system-ui";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("$", c.x, c.y);
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-
-  for (const p of state.players) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-    ctx.lineWidth = p.id === myId ? 4 : 2;
-    ctx.strokeStyle = "#ffffff";
-    ctx.stroke();
-
-    if (p.id === myId) {
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 12px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText("YOU", p.x, p.y - 27);
-      ctx.textAlign = "left";
-    }
-  }
-
-  const remaining = Math.max(0, Math.ceil((state.roundEndsAt - Date.now()) / 1000));
-
-  if (remaining === 0) {
-    const winner = [...state.players].sort((a, b) => b.score - a.score)[0];
-
-    if (winner) {
-      overlay.classList.remove("hidden");
-      overlay.innerHTML = winner.id === myId
-        ? "🏆 You won!<br><small>New round starting…</small>"
-        : "🏆 Round over<br><small>New round starting…</small>";
-    }
-  } else if (!overlay.textContent.includes("This game is full")) {
-    overlay.classList.add("hidden");
-  }
-}
-
-function loop() {
-  drawArena();
-  requestAnimationFrame(loop);
-}
-
-loop();
+const socket=io();const $=id=>document.getElementById(id);const canvas=$('canvas'),ctx=canvas.getContext('2d');let state=null,myId=null,profileId='cc_profile';let keys={};let audioCtx;
+const storedName=localStorage.getItem('cc_name');if(storedName)$('name').value=storedName;
+function sound(freq=600,dur=.06){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);g.gain.value=.04;o.start();o.stop(audioCtx.currentTime+dur)}catch(e){}}
+function join(opts){const name=($('name').value||'Player').trim().slice(0,16);localStorage.setItem('cc_name',name);socket.emit('join',{name,...opts});$('lobby').hidden=true;$('game').hidden=false}
+$('quick').onclick=()=>{const name=($('name').value||'Player').trim();localStorage.setItem('cc_name',name);socket.emit('quickPlay',{name,mode:$('mode').value});$('queue').textContent='Searching for players...'};
+$('create').onclick=()=>join({mode:$('mode').value,map:$('map').value==='random'?null:$('map').value,privateRoom:true});
+$('join').onclick=()=>join({roomId:$('roomCode').value.trim().toUpperCase()});
+socket.on('roomCreated',x=>{if(x.privateRoom)$('queue').textContent='Private room: '+x.roomId+'  | Share this code with friends.'});socket.on('queue',x=>$('queue').textContent=x);socket.on('connect',()=>{$('status').textContent='🟢 Online';myId=socket.id});socket.on('disconnect',()=>{$('status').textContent='🔴 Offline'});socket.on('errorMessage',m=>alert(m));
+socket.on('reaction',r=>{const el=$('reaction');el.hidden=false;el.textContent=`${r.emoji} ${r.name}`;setTimeout(()=>el.hidden=true,1200);});
+socket.on('chat',()=>{});
+socket.on('state',s=>{state=s;$('game').hidden=false;$('lobby').hidden=true;renderUI();draw()});
+function renderUI(){if(!state)return;$('roundInfo').textContent=`ROUND ${state.round} • ${state.mode.toUpperCase()}`;$('mapInfo').textContent=state.mapName;const remain=state.phase==='playing'?Math.max(0,Math.ceil((state.roundEndsAt-Date.now())/1000)):Math.max(0,Math.ceil((state.overEndsAt-Date.now())/1000));$('timer').textContent=state.phase==='round_over'?'OVER':remain;$('scoreboard').innerHTML=state.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>`<div class="score ${p.id===myId?'me':''}"><span>${i<3?['🥇','🥈','🥉'][i]:'•'}</span><span>${escapeHtml(p.name)}</span><strong>${p.score}</strong></div>`).join('');if(state.phase==='round_over'){const w=state.winner;showOverlay(`<div class="overlay-card"><h2>🏆 ROUND OVER</h2><p>${w?escapeHtml(w.name):'No winner'} won with <b>${w?.score||0}</b> coins.</p><p>Next round in <b>${remain}</b></p></div>`)}else hideOverlay();}
+function showOverlay(html){$('overlay').hidden=false;$('overlay').innerHTML=html;$('overlay').className='overlay'}function hideOverlay(){$('overlay').hidden=true}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function draw(){if(!state)return;ctx.clearRect(0,0,800,440);ctx.fillStyle='#0e1430';ctx.fillRect(0,0,800,440);drawGrid();drawWalls();for(const c of state.coins)drawCoin(c);for(const u of state.powerups)drawPower(u);for(const p of state.players)drawPlayer(p);if(state.event){ctx.fillStyle='#ffd166';ctx.font='900 22px system-ui';ctx.textAlign='center';ctx.fillText(eventName(state.event),400,32)}requestAnimationFrame(()=>{if(state)draw()});}
+function drawGrid(){ctx.strokeStyle='#18204a';ctx.lineWidth=1;for(let x=0;x<800;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,440);ctx.stroke()}for(let y=0;y<440;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(800,y);ctx.stroke()}}
+function drawWalls(){ctx.fillStyle='#303b6f';for(const w of ({arena:[],maze:[[120,80,260,18],[120,80,18,180],[360,80,260,18],[602,80,18,180],[120,320,260,18],[120,320,18,150],[360,320,260,18],[602,320,18,150],[300,160,18,110],[420,250,18,110]],treasure:[[260,140,160,18],[260,140,18,100],[420,140,18,100],[260,342,160,18],[260,242,18,100],[420,242,18,100]],ice:[[190,90,220,14],[190,356,220,14],[130,160,14,140],[456,160,14,140]]}[state.map]||[])){ctx.fillRect(...w)}}
+function drawCoin(c){const colors={gold:'#ffd166',blue:'#74b9ff',purple:'#a29bfe',red:'#ff7675',diamond:'#55efc4'};ctx.fillStyle=colors[c.type];ctx.beginPath();ctx.arc(c.x,c.y,c.type==='diamond'?9:7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff9';ctx.stroke();ctx.fillStyle='#11162d';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText(c.value,c.x,c.y+3)}
+function drawPower(u){const icons={speed:'⚡',magnet:'🧲',shield:'🛡️',double:'2×',ghost:'👻',teleport:'🌀',freeze:'❄️',steal:'💰'};ctx.font='20px serif';ctx.textAlign='center';ctx.fillText(icons[u.type]||'?',u.x,u.y+7)}
+function drawPlayer(p){const skins={classic:'●',ninja:'🥷',robot:'🤖',alien:'👽',king:'👑'};ctx.globalAlpha=p.effects?.ghost>Date.now()?.7:1;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,15,0,Math.PI*2);ctx.fill();ctx.font='18px serif';ctx.textAlign='center';ctx.fillText(skins[p.skin]||'●',p.x,p.y+7);ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.font='bold 11px system-ui';ctx.fillText(p.name,p.x,p.y-22)}
+function eventName(e){return {double_coins:'⚡ DOUBLE COINS!',coin_rain:'🌧️ COIN RAIN!',magnet_storm:'🧲 MAGNET STORM!'}[e]||e}
+function send(){socket.emit('input',keys)}document.addEventListener('keydown',e=>{const k=e.key.toLowerCase();const m={w:'up',arrowup:'up',s:'down',arrowdown:'down',a:'left',arrowleft:'left',d:'right',arrowright:'right'}[k];if(m){keys[m]=true;e.preventDefault();send()}});document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();const m={w:'up',arrowup:'up',s:'down',arrowdown:'down',a:'left',arrowleft:'left',d:'right',arrowright:'right'}[k];if(m){keys[m]=false;send()}});
+document.querySelectorAll('[data-dir]').forEach(b=>{const d=b.dataset.dir;const down=e=>{e.preventDefault();keys[d]=true;send()};const up=e=>{e.preventDefault();keys[d]=false;send()};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
+function react(e){socket.emit('reaction',e);sound(800,.08)}window.react=react;function leaveGame(){location.reload()}window.leaveGame=leaveGame;
+document.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{socket.emit('setSkin',b.dataset.skin);document.querySelectorAll('[data-skin]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+async function loadMeta(){try{const r=await fetch('/api/leaderboard');const data=await r.json();$('leaderboard').innerHTML=data.length?data.map((p,i)=>`<div class="lbrow"><span>${i+1}</span><span>${escapeHtml(p.name)}</span><strong>Lv.${p.level} • ${p.wins} wins</strong></div>`).join(''):'No champions yet. Humanity remains unproven.'}catch(e){$('leaderboard').textContent='Leaderboard unavailable'}}loadMeta();setInterval(loadMeta,10000);$('daily').innerHTML='<b>Daily challenges</b><br>🪙 Collect 100 coins<br>🏆 Win 3 rounds<br>💎 Find a diamond';$('profile').innerHTML='Play rounds to earn XP, levels, wins and achievements.';
+setInterval(()=>{if(state)renderUI()},250);
