@@ -1,4 +1,14 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#10152b"><title>Coin Clash</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html><html><head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-93G94E2E7J"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-93G94E2E7J');
+</script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#10152b"><title>Coin Clash</title><link rel="stylesheet" href="style.css"></head><body>
 <div id="app">
 <header><div><h1>🪙 COIN CLASH</h1><p class="tag">Collect. Compete. Cause entirely unnecessary chaos.</p></div><div id="status">Connecting...</div></header>
 <section id="lobby" class="panel"><div class="lobby-grid"><div><h2>Ready?</h2><input id="name" maxlength="16" placeholder="Your player name"><div class="row"><select id="mode"><option value="classic">Classic</option><option value="double">Double Coins</option><option value="chaos">Chaos</option></select><select id="map"><option value="random">Random Map</option><option value="arena">Coin Arena</option><option value="maze">Crystal Maze</option><option value="treasure">Treasure Island</option><option value="ice">Ice Arena</option></select></div><div class="row"><button id="quick">🎮 QUICK PLAY</button><button id="create">🔒 CREATE ROOM</button></div><div class="row"><input id="roomCode" maxlength="8" placeholder="Room code"><button id="join">JOIN</button></div><p id="queue"></p></div><div><h3>How to play</h3><ul><li>Collect coins before the 60-second timer ends.</li><li>Grab power-ups and steal the lead.</li><li>Rare coins are worth much more.</li><li>Use WASD/arrows or the mobile controls.</li></ul><div class="daily" id="daily"></div></div></div></section>
