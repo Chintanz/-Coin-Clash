@@ -30,7 +30,7 @@ const quickQueue = [];
 const profiles = new Map();
 
 function makeRoom(id, mode='classic', mapKey=null, privateRoom=false) {
-  return { id, mode, mapKey: mapKey || randomMap(), privateRoom, players:new Map(), phase:'waiting', round:0,
+  return { id, mode, selectedMap: mapKey || null, mapKey: mapKey || randomMap(), privateRoom, players:new Map(), phase:'waiting', round:0,
     roundEndsAt:0, overEndsAt:0, winner:null, event:null, eventEndsAt:0, coins:[], powerups:[], lastSpawn:0 };
 }
 function randomMap(){ return Object.keys(maps)[Math.floor(Math.random()*Object.keys(maps).length)]; }
@@ -58,7 +58,8 @@ function ensureProfile(id,name){
 }
 function addXP(p,n){p.xp+=n; const old=p.level; p.level=1+Math.floor(p.xp/100); return p.level>old}
 function startRound(room){
-  room.phase='playing'; room.round++; room.roundEndsAt=Date.now()+ROUND_SECONDS*1000; room.winner=null; room.event=null; room.eventEndsAt=0; room.coins=[]; room.powerups=[]; room.lastSpawn=0;
+  room.phase='playing'; room.round++;
+  room.mapKey = room.selectedMap || (room.round === 1 ? room.mapKey : randomMap()); room.roundEndsAt=Date.now()+ROUND_SECONDS*1000; room.winner=null; room.event=null; room.eventEndsAt=0; room.coins=[]; room.powerups=[]; room.lastSpawn=0;
   for(const p of room.players.values()){p.score=0;p.input={};p.effects={speed:0,magnet:0,shield:0,double:0,ghost:0,freeze:0};p.x=spawnPoint().x;p.y=spawnPoint().y;}
   for(let i=0;i<18;i++) room.coins.push(newCoin(room));
 }
@@ -87,14 +88,33 @@ function removeFromQueue(socket){const i=quickQueue.indexOf(socket);if(i>=0)quic
 io.on('connection',socket=>{
   socket.on('join',({name,roomId,mode,map,privateRoom}={})=>{
     if(socket.data.roomId)return;
-    if(roomId){let room=rooms.get(roomId);if(!room) room=createRoom(socket,name,{id:roomId,mode,map,privateRoom:true});else if(!joinRoom(socket,room,name)) socket.emit('errorMessage','Room is full.');return;}
+    if(roomId){let room=rooms.get(roomId);if(!room) room=createRoom(socket,name,{id:roomId,mode:mode||'classic',map,privateRoom:true});else if(!joinRoom(socket,room,name)){socket.emit('errorMessage','Room is full or unavailable.');return;} socket.emit('roomCreated',{roomId:room.id,privateRoom:room.privateRoom,mode:room.mode,map:room.mapKey});return;}
     const room=createRoom(socket,name,{mode:mode||'classic',map,privateRoom});
-    socket.emit('roomCreated',{roomId:room.id,privateRoom:room.privateRoom});
+    socket.emit('roomCreated',{roomId:room.id,privateRoom:room.privateRoom,mode:room.mode,map:room.mapKey});
   });
   socket.on('quickPlay',({name,mode='classic'}={})=>{
-    if(socket.data.roomId)return; removeFromQueue(socket); quickQueue.push(socket);
-    if(quickQueue.length>=2){const a=quickQueue.shift(),b=quickQueue.shift();const room=createRoom(a,a.data.name||name,{mode,privateRoom:false});joinRoom(b,room,b.data.name||'Player 2');}
-    else socket.emit('queue','Searching for players...');
+    if(socket.data.roomId)return;
+    removeFromQueue(socket);
+    socket.data.name = (name || 'Player').trim().slice(0,16) || 'Player';
+    const waiting = quickQueue.findIndex(s => s.connected && !s.data.roomId && s.data.quickMode === mode);
+    if(waiting >= 0){
+      const opponent = quickQueue.splice(waiting,1)[0];
+      const room=createRoom(opponent,opponent.data.name,{mode,privateRoom:false});
+      joinRoom(socket,room,socket.data.name);
+      io.to(room.id).emit('roomCreated',{roomId:room.id,privateRoom:false,mode:room.mode,map:room.mapKey});
+    } else {
+      socket.data.quickMode = mode;
+      quickQueue.push(socket);
+      socket.emit('queue','Searching for another player... Starting a solo room in 3 seconds if nobody joins.');
+      setTimeout(()=>{
+        const i=quickQueue.indexOf(socket);
+        if(i>=0 && socket.connected && !socket.data.roomId){
+          quickQueue.splice(i,1);
+          const room=createRoom(socket,socket.data.name,{mode,privateRoom:false});
+          socket.emit('roomCreated',{roomId:room.id,privateRoom:false,mode:room.mode,map:room.mapKey,solo:true});
+        }
+      },3000);
+    }
   });
   socket.on('input',input=>{const room=rooms.get(socket.data.roomId),p=room?.players.get(socket.id);if(p)p.input=input||{}});
   socket.on('setSkin',skin=>{const room=rooms.get(socket.data.roomId),p=room?.players.get(socket.id);if(p&&['classic','ninja','robot','alien','king'].includes(skin))p.skin=skin});
@@ -107,11 +127,13 @@ setInterval(()=>{
   const now=Date.now();
   for(const room of rooms.values()){
     if(room.phase==='waiting')continue;
-    if(room.phase==='round_over'){if(now>=room.overEndsAt){room.mapKey=randomMap();startRound(room)}emitRoom(room);continue}
+    if(room.phase==='round_over'){if(now>=room.overEndsAt){startRound(room)}emitRoom(room);continue}
     if(now>=room.roundEndsAt){finishRound(room);emitRoom(room);continue}
     if(now-room.lastSpawn>1600&&room.coins.length<24){room.coins.push(newCoin(room));room.lastSpawn=now}
     if(now%7000<120){if(room.powerups.length<3)room.powerups.push(newPowerup(room))}
-    if(!room.event&&now>room.roundEndsAt-20000&&Math.random()<0.015){const events=['double_coins','coin_rain','magnet_storm'];room.event=events[Math.floor(Math.random()*events.length)];room.eventEndsAt=now+8000;if(room.event==='coin_rain')for(let i=0;i<15;i++)room.coins.push(newCoin(room))}
+    const eventChance = room.mode==='chaos' ? 0.06 : 0.015;
+    if(!room.event&&now>room.roundEndsAt-25000&&Math.random()<eventChance){const events=['double_coins','coin_rain','magnet_storm'];room.event=events[Math.floor(Math.random()*events.length)];room.eventEndsAt=now+8000;if(room.event==='coin_rain')for(let i=0;i<(room.mode==='chaos'?25:15);i++)room.coins.push(newCoin(room));
+      if(room.mode==='chaos' && Math.random()<0.35){ for(const p of room.players.values()){ if(Math.random()<0.35) p.effects.speed=now+2500; } }}
     if(room.event&&now>=room.eventEndsAt)room.event=null;
     for(const p of room.players.values()){
       const frozen=p.effects.freeze>now; const speed=(p.effects.speed>now?5:3.2)*(frozen?0.35:1); let dx=0,dy=0;
