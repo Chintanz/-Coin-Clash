@@ -17,7 +17,7 @@ $('quick').onclick=()=>{
   socket.emit('quickPlay',{name,mode:$('mode').value});
 };
 $('create').onclick=()=>join({mode:$('mode').value,map:$('map').value==='random'?null:$('map').value,privateRoom:true});
-$('join').onclick=()=>{const code=$('roomCode').value.trim().toUpperCase();if(!code){$('queue').textContent='Enter a room code first.';return;}join({roomId:code});};
+
 socket.on('roomCreated',x=>{
   $('queue').textContent = x.privateRoom ? `Private room: ${x.roomId} | Share this code with friends.` : `Room ${x.roomId} ready${x.solo?' (solo)':''}.`;
   if($('roomInfo')) $('roomInfo').textContent=`ROOM ${x.roomId}`;
