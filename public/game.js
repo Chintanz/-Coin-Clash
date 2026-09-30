@@ -2,26 +2,11 @@ const socket=io();const $=id=>document.getElementById(id);const canvas=$('canvas
 const renderPlayers=new Map();let lastFrame=performance.now();let animationStarted=false;let lastRound=0;let lastPhase='';
 const storedName=localStorage.getItem('cc_name');if(storedName)$('name').value=storedName;
 function sound(freq=600,dur=.06){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);g.gain.value=.04;o.start();o.stop(audioCtx.currentTime+dur)}catch(e){}}
-function join(opts){
-  if(!socket.connected){$('queue').textContent='Connecting to game server...';return;}
-  const name=($('name').value||'Player').trim().slice(0,16)||'Player';
-  localStorage.setItem('cc_name',name);
-  $('queue').textContent='Creating room...';
-  socket.emit('join',{name,...opts});
-}
-$('quick').onclick=()=>{
-  if(!socket.connected){$('queue').textContent='Connecting to game server...';return;}
-  const name=($('name').value||'Player').trim()||'Player';
-  localStorage.setItem('cc_name',name);
-  $('queue').textContent='Searching for players...';
-  socket.emit('quickPlay',{name,mode:$('mode').value});
-};
+function join(opts){const name=($('name').value||'Player').trim().slice(0,16);localStorage.setItem('cc_name',name);socket.emit('join',{name,...opts});$('lobby').hidden=true;$('game').hidden=false}
+$('quick').onclick=()=>{const name=($('name').value||'Player').trim();localStorage.setItem('cc_name',name);socket.emit('quickPlay',{name,mode:$('mode').value});$('queue').textContent='Searching for players...'};
 $('create').onclick=()=>join({mode:$('mode').value,map:$('map').value==='random'?null:$('map').value,privateRoom:true});
-
-socket.on('roomCreated',x=>{
-  $('queue').textContent = x.privateRoom ? `Private room: ${x.roomId} | Share this code with friends.` : `Room ${x.roomId} ready${x.solo?' (solo)':''}.`;
-  if($('roomInfo')) $('roomInfo').textContent=`ROOM ${x.roomId}`;
-});socket.on('queue',x=>$('queue').textContent=x);socket.on('connect',()=>{$('status').textContent='🟢 Online';myId=socket.id});socket.on('disconnect',()=>{$('status').textContent='🔴 Offline'});socket.on('errorMessage',m=>{$('lobby').hidden=false;$('game').hidden=true;$('queue').textContent=m;alert(m)});
+$('join').onclick=()=>join({roomId:$('roomCode').value.trim().toUpperCase()});
+socket.on('roomCreated',x=>{if(x.privateRoom)$('queue').textContent='Private room: '+x.roomId+'  | Share this code with friends.'});socket.on('queue',x=>$('queue').textContent=x);socket.on('connect',()=>{$('status').textContent='🟢 Online';myId=socket.id});socket.on('disconnect',()=>{$('status').textContent='🔴 Offline'});socket.on('errorMessage',m=>alert(m));
 socket.on('reaction',r=>{const el=$('reaction');el.hidden=false;el.textContent=`${r.emoji} ${r.name}`;setTimeout(()=>el.hidden=true,1200);});
 socket.on('chat',()=>{});
 socket.on('state',s=>{
@@ -38,7 +23,7 @@ socket.on('state',s=>{
   for(const id of renderPlayers.keys()) if(!s.players.some(p=>p.id===id)) renderPlayers.delete(id);
   lastRound=s.round;lastPhase=s.phase;renderUI();startAnimation();
 });
-function renderUI(){if(!state)return;if($('roomInfo'))$('roomInfo').textContent=`ROOM ${state.id}`;if($('modeInfo'))$('modeInfo').textContent=state.mode.toUpperCase();$('roundInfo').textContent=`ROUND ${state.round} • ${state.mode.toUpperCase()}`;$('mapInfo').textContent=state.mapName;const remain=state.phase==='playing'?Math.max(0,Math.ceil((state.roundEndsAt-Date.now())/1000)):Math.max(0,Math.ceil((state.overEndsAt-Date.now())/1000));$('timer').textContent=state.phase==='round_over'?'OVER':remain;$('scoreboard').innerHTML=state.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>`<div class="score ${p.id===myId?'me':''}"><span>${i<3?['🥇','🥈','🥉'][i]:'•'}</span><span>${escapeHtml(p.name)}</span><strong>${p.score}</strong></div>`).join('');if(state.phase==='round_over'){const w=state.winner;showOverlay(`<div class="overlay-card"><h2>🏆 ROUND OVER</h2><p>${w?escapeHtml(w.name):'No winner'} won with <b>${w?.score||0}</b> coins.</p><p>Next round in <b>${remain}</b></p></div>`)}else hideOverlay();}
+function renderUI(){if(!state)return;$('roundInfo').textContent=`ROUND ${state.round} • ${state.mode.toUpperCase()}`;$('mapInfo').textContent=state.mapName;const remain=state.phase==='playing'?Math.max(0,Math.ceil((state.roundEndsAt-Date.now())/1000)):Math.max(0,Math.ceil((state.overEndsAt-Date.now())/1000));$('timer').textContent=state.phase==='round_over'?'OVER':remain;$('scoreboard').innerHTML=state.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>`<div class="score ${p.id===myId?'me':''}"><span>${i<3?['🥇','🥈','🥉'][i]:'•'}</span><span>${escapeHtml(p.name)}</span><strong>${p.score}</strong></div>`).join('');if(state.phase==='round_over'){const w=state.winner;showOverlay(`<div class="overlay-card"><h2>🏆 ROUND OVER</h2><p>${w?escapeHtml(w.name):'No winner'} won with <b>${w?.score||0}</b> coins.</p><p>Next round in <b>${remain}</b></p></div>`)}else hideOverlay();}
 function showOverlay(html){const overlay=$('overlay');overlay.innerHTML=html;overlay.hidden=false;overlay.className='overlay'}function hideOverlay(){const overlay=$('overlay');overlay.hidden=true;overlay.innerHTML='';overlay.className=''}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function startAnimation(){if(animationStarted)return;animationStarted=true;lastFrame=performance.now();requestAnimationFrame(animationFrame)}
@@ -65,5 +50,3 @@ function react(e){socket.emit('reaction',e);sound(800,.08)}window.react=react;fu
 document.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{socket.emit('setSkin',b.dataset.skin);document.querySelectorAll('[data-skin]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
 async function loadMeta(){try{const r=await fetch('/api/leaderboard');const data=await r.json();$('leaderboard').innerHTML=data.length?data.map((p,i)=>`<div class="lbrow"><span>${i+1}</span><span>${escapeHtml(p.name)}</span><strong>Lv.${p.level} • ${p.wins} wins</strong></div>`).join(''):'No champions yet. Humanity remains unproven.'}catch(e){$('leaderboard').textContent='Leaderboard unavailable'}}loadMeta();setInterval(loadMeta,10000);$('daily').innerHTML='<b>Daily challenges</b><br>🪙 Collect 100 coins<br>🏆 Win 3 rounds<br>💎 Find a diamond';$('profile').innerHTML='Play rounds to earn XP, levels, wins and achievements.';
 setInterval(()=>{if(state)renderUI()},250);
-
-$('copyRoom')?.addEventListener('click',async()=>{const code=state?.id;if(!code)return;try{await navigator.clipboard.writeText(code);$('copyRoom').textContent='COPIED!';setTimeout(()=>$('copyRoom').textContent='COPY ROOM CODE',1200)}catch(e){prompt('Room code:',code)}});
