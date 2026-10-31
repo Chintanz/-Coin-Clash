@@ -1,355 +1,916 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Clash - Think You Can Win? Prove It!</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🪙 Coin Clash | Arcade Multiplayer Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Fredoka & Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        fredoka: ['Fredoka', 'sans-serif'],
-                        poppins: ['Poppins', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: {
-                        coinGold: '#FFD700',
-                        coinOrange: '#FFA500',
-                        clashRed: '#FF3333',
-                        clashBlue: '#00A8FF',
-                        skyBlue: '#4AA3FF',
-                    },
-                    boxShadow: {
-                        'arcade': '0 10px 0 #b36b00, 0 15px 25px rgba(0,0,0,0.5)',
-                        'arcade-red': '0 8px 0 #990000, 0 12px 20px rgba(0,0,0,0.4)',
-                        'arcade-blue': '0 8px 0 #004499, 0 12px 20px rgba(0,0,0,0.4)',
-                        'card': '0 20px 40px rgba(0,0,0,0.4)',
+                        arcade: { dark: '#0f172a', card: '#1e293b', accent: '#6366f1', glow: '#a855f7' }
                     }
                 }
             }
         }
     </script>
     <style>
-        .text-stroke-thick {
-            text-shadow: 
-                -3px -3px 0 #000,  
-                3px -3px 0 #000,
-                -3px 3px 0 #000,
-                3px 3px 0 #000,
-                0px 5px 15px rgba(0,0,0,0.7);
-        }
-        .text-stroke-gold {
-            text-shadow: 
-                -2px -2px 0 #8B4500,  
-                2px -2px 0 #8B4500,
-                -2px 2px 0 #8B4500,
-                2px 2px 0 #8B4500,
-                0 4px 10px rgba(0,0,0,0.5);
-        }
-        .banner-tilt {
-            transform: rotate(3deg);
-            transition: transform 0.3s ease;
-        }
-        .banner-tilt:hover {
-            transform: rotate(0deg) scale(1.05);
-        }
-        @keyframes floatCoin {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(15deg); }
-        }
-        .floating-coin {
-            animation: floatCoin 3s ease-in-out infinite;
-        }
-        @keyframes pulseGlow {
-            0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
-            50% { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1)); }
-        }
-        .glow-coin {
-            animation: pulseGlow 2s infinite;
-        }
+        body { font-family: 'Outfit', sans-serif; touch-action: manipulation; user-select: none; }
+        .neon-glow { text-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(99, 102, 241, 0.4); }
+        .box-glow { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3); }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
-<body class="font-fredoka bg-slate-950 text-white min-h-screen overflow-x-hidden selection:bg-amber-400 selection:text-black">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center overflow-x-hidden">
 
-    <!-- Header Navigation -->
-    <header class="absolute top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center max-w-7xl mx-auto right-0">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/50 transform -rotate-6">
-                <i class="fa-solid fa-crown text-2xl text-yellow-950"></i>
+    <!-- Audio toggle floating button -->
+    <button id="soundToggleBtn" onclick="toggleSound()" class="fixed top-4 right-4 z-50 bg-slate-800/80 hover:bg-slate-700 text-slate-200 p-3 rounded-2xl backdrop-blur-md border border-slate-700 shadow-lg transition transform hover:scale-105 flex items-center gap-2">
+        <span id="soundIcon">🔊</span> <span id="soundText" class="text-xs font-bold hidden sm:inline">Sound ON</span>
+    </button>
+
+    <!-- Main Container -->
+    <div id="appContainer" class="w-full max-w-4xl mx-auto p-2 sm:p-4 flex flex-col items-center justify-center min-h-screen">
+
+        <!-- SCREEN 1: LOBBY & SETUP -->
+        <div id="screenLobby" class="w-full max-w-lg bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 box-glow backdrop-blur-xl flex flex-col gap-6 animate-fadeIn">
+            <div class="text-center">
+                <h1 class="text-4xl sm:text-5xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-purple-400 to-indigo-500 neon-glow">
+                    🪙 COIN CLASH
+                </h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium">The Ultimate Fast-Paced Arcade Coin Arena</p>
             </div>
-            <span class="text-2xl font-black tracking-wider text-stroke-gold text-amber-400">COIN CLASH</span>
-        </div>
-        <div class="flex items-center gap-4">
-            <button onclick="openLeaderboard()" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl font-bold text-white shadow-arcade-blue border-2 border-blue-400 active:translate-y-1 transition">
-                <i class="fa-solid fa-trophy mr-2 text-yellow-300"></i> Leaderboard
-            </button>
-            <button onclick="openGameModal()" class="hidden sm:flex px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-xl font-black text-slate-950 shadow-arcade border-2 border-yellow-200 active:translate-y-1 transition items-center gap-2">
-                <span>Play Now</span> <i class="fa-solid fa-play text-xs"></i>
-            </button>
-        </div>
-    </header>
 
-    <!-- Main Hero Section -->
-    <main class="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        
-        <!-- Castle Background -->
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-cover bg-center filter brightness-90 contrast-110" 
-                 style="background-image: url('https://images.unsplash.com/photo-1599593815340-410a56641e7f?q=80&w=2000&auto=format&fit=crop');">
+            <!-- Player Setup -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Choose Your Name</label>
+                    <input type="text" id="playerNameInput" maxlength="12" value="CHINTAN" class="w-full bg-slate-800 border-2 border-slate-700 focus:border-indigo-500 rounded-2xl px-4 py-3 text-lg font-bold tracking-wide outline-none transition text-center text-amber-300">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Character Skin</label>
+                    <div id="skinSelector" class="grid grid-cols-4 gap-2">
+                        <!-- Skin cards generated dynamically -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Arena Map</label>
+                    <div id="mapSelector" class="grid grid-cols-3 gap-2">
+                        <!-- Map cards generated dynamically -->
+                    </div>
+                </div>
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-sky-950/40 to-sky-400/30"></div>
-            <div class="absolute inset-0 bg-radial from-transparent via-slate-950/60 to-slate-950"></div>
-        </div>
 
-        <div class="absolute top-28 left-10 text-4xl sm:text-6xl floating-coin z-10 opacity-90">🪙</div>
-        <div class="absolute top-1/3 right-12 text-5xl sm:text-7xl floating-coin z-10 opacity-90" style="animation-delay: 1s;">🪙</div>
-        <div class="absolute bottom-20 left-1/4 text-4xl floating-coin z-10 opacity-80" style="animation-delay: 2s;">👑</div>
-
-        <div class="relative z-20 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            <div class="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
-                
-                <div class="relative inline-block select-none">
-                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-5xl sm:text-6xl filter drop-shadow-[0_8px_8px_rgba(0,0,0,0.6)] animate-bounce">
-                        👑
-                    </div>
-                    <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-orange-600 text-stroke-thick pt-4">
-                        COIN CLASH
-                    </h1>
+            <!-- Lobby Players Queue Preview -->
+            <div class="bg-slate-950/60 rounded-2xl p-4 border border-slate-800">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Room Players</span>
+                    <span id="playerCountBadge" class="text-xs bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-full font-bold">4 / 6 Ready</span>
                 </div>
-
-                <div class="relative inline-block bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 text-white px-6 py-2.5 rounded-2xl transform -rotate-2 shadow-arcade-red border-3 border-yellow-300">
-                    <p class="text-xl sm:text-2xl font-black tracking-wide uppercase italic text-yellow-200 drop-shadow">
-                        Think You Can Win? PROVE IT!
-                    </p>
+                <div id="lobbyPlayerList" class="grid grid-cols-2 gap-2">
+                    <!-- Bots/Players preview -->
                 </div>
+            </div>
 
-                <p class="font-poppins text-base sm:text-lg text-slate-200 max-w-xl leading-relaxed font-medium bg-slate-900/60 p-4 rounded-2xl backdrop-blur-md border border-white/10 shadow-xl">
-                    Dive into <span class="text-amber-400 font-bold">Coin Clash</span>, where every coin counts, every second matters, and rivals are waiting to steal your crown! 👑
-                </p>
-
-                <div class="flex flex-wrap justify-center lg:justify-start gap-3 pt-2">
-                    <div class="flex items-center gap-2 bg-slate-900/80 border border-blue-500/40 px-4 py-2 rounded-xl backdrop-blur shadow-md">
-                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
-                            <i class="fa-solid fa-gamepad"></i>
-                        </div>
-                        <span class="text-sm font-bold text-slate-200">Multiplayer Action</span>
-                    </div>
-                    <div class="flex items-center gap-2 bg-slate-900/80 border border-emerald-500/40 px-4 py-2 rounded-xl backdrop-blur shadow-md">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                            <i class="fa-solid fa-map-location-dot"></i>
-                        </div>
-                        <span class="text-sm font-bold text-slate-200">Exciting Maps</span>
-                    </div>
-                    <div class="flex items-center gap-2 bg-slate-900/80 border border-amber-500/40 px-4 py-2 rounded-xl backdrop-blur shadow-md">
-                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400">
-                            <i class="fa-solid fa-bolt"></i>
-                        </div>
-                        <span class="text-sm font-bold text-slate-200">Epic Modes</span>
-                    </div>
-                </div>
-
-                <div class="pt-4 w-full sm:w-auto">
-                    <button onclick="openGameModal()" class="w-full sm:w-auto group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-black text-slate-950 uppercase tracking-wider bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-500 rounded-3xl shadow-arcade hover:scale-105 active:translate-y-2 transition-all duration-200 border-4 border-white glow-coin">
-                        <span class="relative flex items-center gap-3">
-                            Jump In and Clash! 
-                            <span class="w-10 h-10 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center text-lg shadow-inner group-hover:translate-x-1 transition-transform">
-                                <i class="fa-solid fa-play ml-0.5"></i>
-                            </span>
-                        </span>
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3">
+                <button onclick="startGameSession()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-black text-xl rounded-2xl shadow-xl transform active:scale-95 transition flex items-center justify-center gap-3">
+                    <span>🚀 START GAME</span>
+                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openModal('achievementsModal')" class="py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-slate-700">
+                        🏅 Achievements
+                    </button>
+                    <button onclick="openModal('statsModal')" class="py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-slate-700">
+                        ⭐ XP & Level
                     </button>
                 </div>
-
             </div>
+        </div>
 
-            <div class="lg:col-span-6 flex flex-col items-center justify-center space-y-6">
-                
-                <div class="banner-tilt w-full max-w-md bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-blue-950/90 border-3 border-amber-400 rounded-2xl p-4 shadow-card backdrop-blur-md flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-2xl bg-amber-400 flex-shrink-0 flex items-center justify-center shadow-lg transform -rotate-6 animate-pulse">
-                        <i class="fa-solid fa-trophy text-3xl text-yellow-950"></i>
-                    </div>
+        <!-- SCREEN 2: ACTIVE GAMEPLAY -->
+        <div id="screenGame" class="w-full max-w-4xl hidden flex-col gap-3">
+            <!-- Top HUD Bar -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl px-4 py-3 flex flex-wrap justify-between items-center gap-4 shadow-lg backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div id="hudPlayerSkin" class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-2xl border border-amber-500/40 shadow">🥷</div>
                     <div>
-                        <h3 class="text-lg sm:text-xl font-black text-amber-300 text-stroke-gold">Can you dominate the leaderboard?</h3>
-                        <p class="text-xs sm:text-sm font-poppins text-slate-200 mt-0.5">Jump in and find out now!</p>
+                        <div id="hudPlayerName" class="font-extrabold text-sm text-amber-300 tracking-wide">CHINTAN</div>
+                        <div class="text-xs text-slate-400 flex items-center gap-1">LVL <span id="hudLevel">1</span> (<span id="hudXP">0</span> XP)</div>
                     </div>
                 </div>
 
-                <div class="relative w-full max-w-lg rounded-3xl overflow-hidden border-4 border-amber-400/80 shadow-card bg-slate-900/85 p-3 group">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10 pointer-events-none"></div>
+                <!-- Timer and Round Phase Badge -->
+                <div class="flex flex-col items-center">
+                    <div id="hudPhaseBadge" class="text-xs uppercase font-black tracking-widest text-indigo-400 animate-pulse">GET READY</div>
+                    <div id="hudTimer" class="text-2xl sm:text-3xl font-black font-mono tracking-wider text-slate-100">01:00</div>
+                </div>
+
+                <!-- Score & Quick Leaderboard trigger -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500/10 border border-amber-500/30 px-4 py-1.5 rounded-xl text-right">
+                        <div class="text-[10px] uppercase font-bold text-amber-400/80">Coins</div>
+                        <div id="hudScore" class="text-xl font-black text-amber-400">0</div>
+                    </div>
+                    <button onclick="toggleMiniLeaderboard()" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-300 transition border border-slate-700">
+                        📊
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center Game Arena Canvas & Overlay -->
+            <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-800 box-glow shadow-2xl">
+                <!-- Countdown Overlay (3..2..1..GO) -->
+                <div id="countdownOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md z-30 flex flex-col items-center justify-center transition-opacity duration-300">
+                    <div id="countdownNumber" class="text-7xl sm:text-9xl font-black text-amber-400 neon-glow animate-bounce">3</div>
+                    <div id="countdownText" class="text-xl sm:text-2xl font-bold text-slate-300 mt-4 uppercase tracking-widest">GET READY!</div>
+                </div>
+
+                <!-- Round Over / Winner Overlay -->
+                <div id="roundOverOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-lg z-30 hidden flex flex-col items-center justify-center p-6 text-center">
+                    <div class="text-xs uppercase tracking-widest text-indigo-400 font-black mb-1">🏆 ROUND OVER</div>
+                    <h2 id="winnerTitle" class="text-3xl sm:text-5xl font-black text-amber-400 neon-glow mb-2">CHINTAN WINS!</h2>
+                    <p id="winnerCoinsSubtitle" class="text-slate-300 font-bold text-lg mb-6">Collected 47 Coins</p>
                     
-                    <div class="relative h-80 sm:h-96 w-full rounded-2xl overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop" 
-                             alt="Coin Clash Heroes" 
-                             class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
-                             onerror="this.src='https://placehold.co/600x400/1e1b4b/ffd700?text=Coin+Clash+Heroes';">
-                        
-                        <div class="absolute bottom-6 right-6 z-20 bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-2xl shadow-arcade flex items-center gap-2 transform rotate-3">
-                            <span class="text-xl">🪙</span>
-                            <span>+500 COINS</span>
-                        </div>
-                        
-                        <div class="absolute top-6 left-6 z-25 bg-blue-600 text-white font-black px-4 py-2 rounded-xl shadow-arcade flex items-center gap-2 transform -rotate-3 border-2 border-blue-400">
-                            <span>👑</span>
-                            <span>SEASON 3 LIVE</span>
+                    <div class="w-full max-w-sm bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 shadow-xl">
+                        <div class="text-xs uppercase font-bold text-slate-400 mb-3 text-left">Final Standings</div>
+                        <div id="finalRankingsList" class="space-y-2">
+                            <!-- rankings inserted here -->
                         </div>
                     </div>
 
-                    <div class="relative z-20 grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/10 text-center">
-                        <div class="bg-slate-950/60 p-2 rounded-xl">
-                            <div class="text-xs text-slate-400 font-poppins">Active Players</div>
-                            <div class="text-lg font-black text-amber-400">124,500+</div>
-                        </div>
-                        <div class="bg-slate-950/60 p-2 rounded-xl">
-                            <div class="text-xs text-slate-400 font-poppins">Matches Played</div>
-                            <div class="text-lg font-black text-blue-400">1.8M+</div>
-                        </div>
-                        <div class="bg-slate-950/60 p-2 rounded-xl">
-                            <div class="text-xs text-slate-400 font-poppins">Daily Prize</div>
-                            <div class="text-lg font-black text-emerald-400">$10,000</div>
-                        </div>
+                    <div class="text-xs text-indigo-300 font-bold mb-2">+50 XP Earned</div>
+                    <div class="text-slate-400 text-sm">Next round starts in <span id="nextRoundCountdown" class="text-amber-400 font-bold text-lg">3</span>...</div>
+                </div>
+
+                <!-- Event Announcement Banner (e.g. DOUBLE COINS) -->
+                <div id="eventBanner" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none hidden transition-all duration-300 bg-amber-500/90 text-slate-950 px-6 py-2 rounded-2xl font-black text-sm sm:text-base shadow-2xl border-2 border-amber-300 uppercase tracking-widest animate-pulse">
+                    ⚡ DOUBLE COINS ACTIVE!
+                </div>
+
+                <!-- Canvas -->
+                <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+                <!-- Floating Emoji Reactions Bar (Bottom Center of Canvas) -->
+                <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-20 flex gap-1.5 bg-slate-950/80 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-800 shadow-xl">
+                    <button onclick="sendReaction('😂')" class="hover:scale-125 transition text-xl p-1">😂</button>
+                    <button onclick="sendReaction('😱')" class="hover:scale-125 transition text-xl p-1">😱</button>
+                    <button onclick="sendReaction('😎')" class="hover:scale-125 transition text-xl p-1">😎</button>
+                    <button onclick="sendReaction('🔥')" class="hover:scale-125 transition text-xl p-1">🔥</button>
+                    <button onclick="sendReaction('💀')" class="hover:scale-125 transition text-xl p-1">💀</button>
+                    <button onclick="sendReaction('👑')" class="hover:scale-125 transition text-xl p-1">👑</button>
+                </div>
+            </div>
+
+            <!-- Controls & Mobile D-Pad / Powerups -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Power-ups Inventory -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Power-Ups</div>
+                    <div id="powerupSlots" class="flex gap-2">
+                        <!-- Power-up slots -->
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">⚡</div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">🧲</div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">🛡️</div>
                     </div>
                 </div>
 
+                <!-- Touch D-Pad for Mobile / Quick Info -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs text-slate-400">
+                    <div>💡 <span class="font-bold text-slate-300">Tip:</span> Use Arrow Keys / WASD or Touch & Drag on canvas to move. Collect rare coins & powerups!</div>
+                    <button onclick="returnToLobby()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Quit</button>
+                </div>
             </div>
-
         </div>
-    </main>
 
-    <!-- Game Launch Modal -->
-    <div id="gameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg hidden">
-        <div class="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 to-indigo-950 border-4 border-amber-400 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
-            
-            <button onclick="closeGameModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-black flex items-center justify-center shadow-lg transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+    </div>
 
-            <div class="inline-block bg-amber-400 text-slate-950 font-black px-4 py-1.5 rounded-full text-sm mb-3 shadow">
-                🎮 ARENA READY
+    <!-- MODAL: ACHIEVEMENTS -->
+    <div id="achievementsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-black text-amber-400">🏅 Achievements</h3>
+                <button onclick="closeModal('achievementsModal')" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
             </div>
-            <h2 class="text-3xl sm:text-4xl font-black text-amber-300 text-stroke-gold uppercase mb-2">Choose Your Game Mode</h2>
-            <p class="font-poppins text-slate-300 text-sm sm:text-base mb-6">Select how you want to clash and claim your fortune!</p>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div onclick="startMatch('Solo Rush')" class="bg-slate-950/70 border-2 border-blue-500/50 hover:border-amber-400 rounded-2xl p-5 cursor-pointer transition transform hover:-translate-y-1 text-left group">
-                    <div class="w-12 h-12 rounded-xl bg-blue-600/30 flex items-center justify-center text-blue-400 text-2xl mb-3 group-hover:scale-110 transition">
-                        ⚡
-                    </div>
-                    <h3 class="font-black text-xl text-white group-hover:text-amber-400 transition">Solo Speed Rush</h3>
-                    <p class="font-poppins text-xs text-slate-400 mt-1">Collect as many coins as possible in 60 seconds against the clock.</p>
-                </div>
-
-                <div onclick="startMatch('Battle Royale')" class="bg-slate-950/70 border-2 border-rose-500/50 hover:border-amber-400 rounded-2xl p-5 cursor-pointer transition transform hover:-translate-y-1 text-left group">
-                    <div class="w-12 h-12 rounded-xl bg-rose-600/30 flex items-center justify-center text-rose-400 text-2xl mb-3 group-hover:scale-110 transition">
-                        ⚔️
-                    </div>
-                    <h3 class="font-black text-xl text-white group-hover:text-amber-400 transition">Crown Battle Royale</h3>
-                    <p class="font-poppins text-xs text-slate-400 mt-1">Multiplayer showdown! Steal crowns from rivals to win the grand pot.</p>
-                </div>
+            <div id="achievementsList" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                <!-- Achievements items inserted dynamically -->
             </div>
-
-            <button onclick="closeGameModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-2xl font-black text-slate-950 text-lg shadow-arcade border-2 border-yellow-200 transition">
-                Start Quick Match Now!
-            </button>
         </div>
     </div>
 
-    <!-- Leaderboard Modal -->
-    <div id="leaderboardModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg hidden">
-        <div class="relative w-full max-w-xl bg-gradient-to-b from-slate-900 to-slate-950 border-4 border-blue-500 rounded-3xl p-6 sm:p-8 shadow-2xl">
-            
-            <button onclick="closeLeaderboard()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-black flex items-center justify-center shadow-lg transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 rounded-2xl bg-amber-400 flex items-center justify-center text-yellow-950 font-black text-2xl shadow">
-                    🏆
+    <!-- MODAL: STATS & XP -->
+    <div id="statsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-black text-indigo-400">⭐ Player Progression</h3>
+                <button onclick="closeModal('statsModal')" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-center">
+                    <div id="modalPlayerLevel" class="text-3xl font-black text-amber-400">Level 1</div>
+                    <div class="w-full bg-slate-800 h-3 rounded-full mt-3 overflow-hidden">
+                        <div id="modalXpBar" class="bg-gradient-to-r from-amber-500 to-indigo-500 h-full w-1/4 transition-all duration-500"></div>
+                    </div>
+                    <div class="text-xs text-slate-400 mt-2"><span id="modalXpCurrent">25</span> / <span id="modalXpTarget">100</span> XP to next level</div>
                 </div>
+
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-amber-300 text-stroke-gold">Global Leaderboard</h2>
-                    <p class="font-poppins text-xs text-slate-400">Top coin collectors of Season 3</p>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">All-Time Statistics</h4>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                            <div class="text-slate-400 text-xs">Total Wins</div>
+                            <div id="statTotalWins" class="text-xl font-black text-amber-400">0</div>
+                        </div>
+                        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                            <div class="text-slate-400 text-xs">Total Coins</div>
+                            <div id="statTotalCoins" class="text-xl font-black text-indigo-400">0</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                <div class="flex items-center justify-between bg-amber-500/10 border-2 border-amber-400/60 p-3.5 rounded-2xl">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-amber-400 font-black text-slate-950 flex items-center justify-center text-sm shadow">1</span>
-                        <span class="font-bold text-white text-base">KingSlayer99</span>
-                    </div>
-                    <span class="font-black text-amber-400 text-base">👑 48,290 Coins</span>
-                </div>
-                <div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 p-3.5 rounded-2xl">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-slate-300 font-black text-slate-950 flex items-center justify-center text-sm shadow">2</span>
-                        <span class="font-bold text-white text-base">CoinQueen_X</span>
-                    </div>
-                    <span class="font-black text-amber-400 text-base">👑 41,500 Coins</span>
-                </div>
-                <div class="flex items-center justify-between bg-slate-900/80 border border-slate-700 p-3.5 rounded-2xl">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-amber-700 font-black text-white flex items-center justify-center text-sm shadow">3</span>
-                        <span class="font-bold text-white text-base">ShadowClash</span>
-                    </div>
-                    <span class="font-black text-amber-400 text-base">👑 39,120 Coins</span>
-                </div>
-            </div>
-
-            <button onclick="closeLeaderboard()" class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold text-white shadow-arcade-blue border border-blue-400 transition">
-                Close Leaderboard
-            </button>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toastMessage" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 border-2 border-amber-400 px-6 py-4 rounded-2xl shadow-arcade flex items-center gap-3">
-        <span class="text-2xl">✨</span>
-        <div>
-            <h4 class="font-black text-amber-300 text-sm" id="toastTitle">Success</h4>
-            <p class="font-poppins text-xs text-slate-300" id="toastDesc">Action completed successfully!</p>
-        </div>
-    </div>
-
-    <!-- JavaScript Interactive Logic -->
+    <!-- JavaScript Game Engine & Logic -->
     <script>
-        function openGameModal() {
-            document.getElementById('gameModal').classList.remove('hidden');
+        // --- GAME STATE & DATA ---
+        const skins = [
+            { id: 'ninja', name: 'Ninja', icon: '🥷', color: '#10b981' },
+            { id: 'robot', name: 'Robot', icon: '🤖', color: '#3b82f6' },
+            { id: 'alien', name: 'Alien', icon: '👽', color: '#a855f7' },
+            { id: 'king', name: 'King', icon: '👑', color: '#f59e0b' },
+            { id: 'wizard', name: 'Wizard', icon: '🧙', color: '#ec4899' },
+            { id: 'superhero', name: 'Hero', icon: '🦸', color: '#ef4444' },
+            { id: 'golden', name: 'Gold', icon: '💎', color: '#fbbf24' }
+        ];
+
+        const maps = [
+            { id: 'arena', name: 'Coin Arena', desc: 'Simple open map' },
+            { id: 'maze', name: 'Maze Style', desc: 'Walls & narrow passages' },
+            { id: 'danger', name: 'Danger Zone', desc: 'Hazardous areas spawn' }
+        ];
+
+        const coinTypes = [
+            { type: 'gold', name: 'Gold', value: 1, color: '#facc15', freq: 0.55, radius: 10 },
+            { type: 'blue', name: 'Blue', value: 3, color: '#38bdf8', freq: 0.25, radius: 12 },
+            { type: 'purple', name: 'Purple', value: 5, color: '#c084fc', freq: 0.12, radius: 14 },
+            { type: 'red', name: 'Red', value: 10, color: '#f87171', freq: 0.06, radius: 16 },
+            { type: 'diamond', name: 'Diamond', value: 25, color: '#34d399', freq: 0.02, radius: 18 }
+        ];
+
+        const achievementsList = [
+            { id: 'collector', title: 'Coin Collector', desc: 'Collect 50 coins total', target: 50, progress: 0, unlocked: false },
+            { id: 'millionaire', title: 'Coin Master', desc: 'Collect 250 coins total', target: 250, progress: 0, unlocked: false },
+            { id: 'champion', title: 'Champion', desc: 'Win 3 rounds', target: 3, progress: 0, unlocked: false },
+            { id: 'speed', title: 'Speed Demon', desc: 'Collect 10 coins in 5 seconds', target: 10, progress: 0, unlocked: false }
+        ];
+
+        let gameState = {
+            playerName: 'CHINTAN',
+            selectedSkin: skins[0],
+            selectedMap: maps[0],
+            score: 0,
+            xp: 0,
+            level: 1,
+            totalWins: 0,
+            totalCoins: 0,
+            soundEnabled: true
+        };
+
+        // Runtime Match State
+        let matchRunning = false;
+        let matchPhase = 'ready'; // ready, countdown, playing, roundover
+        let matchTimer = 60;
+        let currentEvent = null; // null, double, rain, danger
+        let eventTimer = 0;
+        let canvas, ctx;
+        let player = { x: 0, y: 0, radius: 18, speed: 5, vx: 0, vy: 0, shield: false, speedBoost: false, magnet: false };
+        let bots = [];
+        let coins = [];
+        let particles = [];
+        let floatingTexts = [];
+        let obstacles = [];
+        let keys = {};
+        let touchTarget = null;
+        let countdownValue = 3;
+        let nextRoundCountdownVal = 3;
+        let activeReaction = null;
+        let reactionTimer = 0;
+
+        // --- WEB AUDIO API SOUNDS ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
-        function closeGameModal() {
-            document.getElementById('gameModal').classList.add('hidden');
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'coin') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'rare') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(880, now + 0.16);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'victory') {
+                    osc.type = 'sine';
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        g.gain.setValueAtTime(0.3, now + idx * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+                        o.start(now + idx * 0.12);
+                        o.stop(now + idx * 0.12 + 0.3);
+                    });
+                } else if (type === 'warning') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.setValueAtTime(200, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch(e) { console.error(e); }
         }
-        function openLeaderboard() {
-            document.getElementById('leaderboardModal').classList.remove('hidden');
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('soundIcon').innerText = gameState.soundEnabled ? '🔊' : '🔇';
+            document.getElementById('soundText').innerText = gameState.soundEnabled ? 'Sound ON' : 'Sound OFF';
         }
-        function closeLeaderboard() {
-            document.getElementById('leaderboardModal').classList.add('hidden');
+
+        // --- INIT LOBBY UI ---
+        function renderLobby() {
+            // Skins
+            const skinContainer = document.getElementById('skinSelector');
+            skinContainer.innerHTML = skins.map(s => `
+                <button onclick="selectSkin('${s.id}')" class="p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition transform hover:scale-105 ${gameState.selectedSkin.id === s.id ? 'border-indigo-500 bg-indigo-500/20 shadow-lg' : 'border-slate-800 bg-slate-900'}">
+                    <span class="text-2xl">${s.icon}</span>
+                    <span class="text-[10px] font-bold text-slate-300">${s.name}</span>
+                </button>
+            `).join('');
+
+            // Maps
+            const mapContainer = document.getElementById('mapSelector');
+            mapContainer.innerHTML = maps.map(m => `
+                <button onclick="selectMap('${m.id}')" class="p-3 rounded-2xl border-2 flex flex-col items-center text-center gap-1 transition transform hover:scale-105 ${gameState.selectedMap.id === m.id ? 'border-amber-500 bg-amber-500/20 shadow-lg' : 'border-slate-800 bg-slate-900'}">
+                    <span class="text-xs font-black text-amber-300">${m.name}</span>
+                    <span class="text-[9px] text-slate-400">${m.desc}</span>
+                </button>
+            `).join('');
+
+            // Lobby Bot Preview List
+            const botList = document.getElementById('lobbyPlayerList');
+            const previewBots = [
+                { name: gameState.playerName, skin: gameState.selectedSkin, isUser: true },
+                { name: 'Alex', skin: skins[1] },
+                { name: 'Sam', skin: skins[2] },
+                { name: 'Jamie', skin: skins[3] }
+            ];
+            botList.innerHTML = previewBots.map(b => `
+                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800">
+                    <span class="text-lg">${b.skin.icon}</span>
+                    <span class="text-xs font-bold ${b.isUser ? 'text-amber-400' : 'text-slate-300'}">${b.name}</span>
+                </div>
+            `).join('');
         }
-        function startMatch(mode) {
-            closeGameModal();
-            showToast('Match Initialized!', 'Entering ' + mode + ' arena. Get ready to clash!');
+
+        function selectSkin(id) {
+            gameState.selectedSkin = skins.find(s => s.id === id);
+            renderLobby();
         }
-        function showToast(title, desc) {
-            const toast = document.getElementById('toastMessage');
-            document.getElementById('toastTitle').innerText = title;
-            document.getElementById('toastDesc').innerText = desc;
-            toast.classList.remove('translate-y-24', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-24', 'opacity-0');
-            }, 3500);
+
+        function selectMap(id) {
+            gameState.selectedMap = maps.find(m => m.id === id);
+            renderLobby();
         }
-        window.onclick = function(event) {
-            const gameModal = document.getElementById('gameModal');
-            const leaderboardModal = document.getElementById('leaderboardModal');
-            if (event.target === gameModal) closeGameModal();
-            if (event.target === leaderboardModal) closeLeaderboard();
+
+        // --- START GAME SESSION ---
+        function startGameSession() {
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (nameInput) gameState.playerName = nameInput;
+
+            document.getElementById('screenLobby').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('hidden');
+
+            // HUD update
+            document.getElementById('hudPlayerName').innerText = gameState.playerName;
+            document.getElementById('hudPlayerSkin').innerText = gameState.selectedSkin.icon;
+            document.getElementById('hudLevel').innerText = gameState.level;
+            document.getElementById('hudXP').innerText = gameState.xp;
+
+            initCanvas();
+            startNewRound();
         }
+
+        function returnToLobby() {
+            matchRunning = false;
+            document.getElementById('screenGame').classList.add('hidden');
+            document.getElementById('screenLobby').classList.remove('hidden');
+            renderLobby();
+        }
+
+        // --- CANVAS & GAME LOOP SETUP ---
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Controls listeners
+            window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                touchTarget = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            });
+            canvas.addEventListener('touchmove', e => {
+                const rect = canvas.getBoundingClientRect();
+                if (e.touches.length > 0) {
+                    touchTarget = { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+                }
+            });
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        function startNewRound() {
+            matchRunning = true;
+            matchPhase = 'countdown';
+            matchTimer = 60;
+            gameState.score = 0;
+            currentEvent = null;
+            coins = [];
+            particles = [];
+            floatingTexts = [];
+
+            // Position player at center
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            player.vx = 0;
+            player.vy = 0;
+
+            // Setup Bots
+            bots = [
+                { name: 'Alex', skin: skins[1], x: canvas.width * 0.2, y: canvas.height * 0.2, score: 0, vx: 2, vy: 1, radius: 18 },
+                { name: 'Sam', skin: skins[2], x: canvas.width * 0.8, y: canvas.height * 0.2, score: 0, vx: -1, vy: 2, radius: 18 },
+                { name: 'Jamie', skin: skins[3], x: canvas.width * 0.5, y: canvas.height * 0.8, score: 0, vx: 1.5, vy: -1.5, radius: 18 }
+            ];
+
+            // Build obstacles based on map
+            obstacles = [];
+            if (gameState.selectedMap.id === 'maze') {
+                obstacles.push(
+                    { x: canvas.width * 0.3, y: canvas.height * 0.3, w: 20, h: 150 },
+                    { x: canvas.width * 0.7, y: canvas.height * 0.5, w: 20, h: 150 },
+                    { x: canvas.width * 0.4, y: canvas.height * 0.7, w: 200, h: 20 }
+                );
+            }
+
+            // Countdown sequence
+            countdownValue = 3;
+            document.getElementById('countdownOverlay').classList.remove('hidden');
+            document.getElementById('roundOverOverlay').classList.add('hidden');
+            document.getElementById('hudScore').innerText = '0';
+
+            runCountdown();
+        }
+
+        function runCountdown() {
+            if (countdownValue > 0) {
+                document.getElementById('countdownNumber').innerText = countdownValue;
+                document.getElementById('countdownText').innerText = countdownValue === 3 ? '🟢 GET READY!' : 'READY...';
+                playSound('warning');
+                countdownValue--;
+                setTimeout(runCountdown, 1000);
+            } else {
+                document.getElementById('countdownNumber').innerText = 'GO!';
+                document.getElementById('countdownText').innerText = 'COLLECT COINS!';
+                playSound('rare');
+                setTimeout(() => {
+                    document.getElementById('countdownOverlay').classList.add('hidden');
+                    matchPhase = 'playing';
+                    startRoundTimer();
+                }, 600);
+            }
+        }
+
+        function startRoundTimer() {
+            const timerInterval = setInterval(() => {
+                if (!matchRunning || matchPhase !== 'playing') {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                matchTimer--;
+                let mins = Math.floor(matchTimer / 60);
+                let secs = matchTimer % 60;
+                document.getElementById('hudTimer').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+
+                // Phase events
+                if (matchTimer === 45) {
+                    triggerEvent('double', '⚡ DOUBLE COINS ACTIVE!');
+                } else if (matchTimer === 10) {
+                    triggerEvent('rain', '🌧️ COIN RAIN EVENT!');
+                    playSound('warning');
+                } else if (matchTimer === 5) {
+                    document.getElementById('hudPhaseBadge').innerText = '🔥 FINAL 5 SECONDS!';
+                    playSound('warning');
+                }
+
+                if (matchTimer <= 0) {
+                    clearInterval(timerInterval);
+                    endRound();
+                }
+            }, 1000);
+        }
+
+        function triggerEvent(type, text) {
+            currentEvent = type;
+            const banner = document.getElementById('eventBanner');
+            banner.innerText = text;
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 5000);
+
+            if (type === 'rain') {
+                for (let i = 0; i < 25; i++) spawnCoin();
+            }
+        }
+
+        // --- GAME TICK & UPDATE ---
+        function updateGame() {
+            if (!matchRunning || matchPhase !== 'playing') return;
+
+            // Spawn coins dynamically
+            if (Math.random() < 0.12 && coins.length < 40) {
+                spawnCoin();
+            }
+
+            // Player movement (Keyboard or Mouse/Touch)
+            let speed = player.speed;
+            let dx = 0, dy = 0;
+            if (keys['arrowup'] || keys['w']) dy -= speed;
+            if (keys['arrowdown'] || keys['s']) dy += speed;
+            if (keys['arrowleft'] || keys['a']) dx -= speed;
+            if (keys['arrowright'] || keys['d']) dx += speed;
+
+            if (dx !== 0 || dy !== 0) {
+                player.x += dx;
+                player.y += dy;
+            } else if (touchTarget) {
+                let tdx = touchTarget.x - player.x;
+                let tdy = touchTarget.y - player.y;
+                let dist = Math.hypot(tdx, tdy);
+                if (dist > 3) {
+                    player.x += (tdx / dist) * speed;
+                    player.y += (tdy / dist) * speed;
+                }
+            }
+
+            // Boundary collision
+            player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+            // Obstacle collision
+            obstacles.forEach(obs => {
+                if (player.x + player.radius > obs.x && player.x - player.radius < obs.x + obs.w &&
+                    player.y + player.radius > obs.y && player.y - player.radius < obs.y + obs.h) {
+                    player.x -= dx;
+                    player.y -= dy;
+                }
+            });
+
+            // Bot movement AI
+            bots.forEach(b => {
+                b.x += b.vx;
+                b.y += b.vy;
+                if (b.x < b.radius || b.x > canvas.width - b.radius) b.vx *= -1;
+                if (b.y < b.radius || b.y > canvas.height - b.radius) b.vy *= -1;
+                if (Math.random() < 0.05) {
+                    b.vx = (Math.random() - 0.5) * 4;
+                    b.vy = (Math.random() - 0.5) * 4;
+                }
+            });
+
+            // Coin collection check (Player)
+            coins.forEach((c, index) => {
+                let dist = Math.hypot(player.x - c.x, player.y - c.y);
+                if (dist < player.radius + c.radius) {
+                    let val = c.value * (currentEvent === 'double' ? 2 : 1);
+                    gameState.score += val;
+                    gameState.totalCoins += val;
+                    document.getElementById('hudScore').innerText = gameState.score;
+                    playSound(c.value >= 10 ? 'rare' : 'coin');
+
+                    // Floating text
+                    floatingTexts.push({ x: c.x, y: c.y, text: `+${val}`, color: c.color, alpha: 1, vy: -1.5 });
+                    // Particles
+                    createParticles(c.x, c.y, c.color);
+
+                    coins.splice(index, 1);
+                }
+            });
+
+            // Bot coin collection
+            coins.forEach((c, index) => {
+                bots.forEach(b => {
+                    let dist = Math.hypot(b.x - c.x, b.y - c.y);
+                    if (dist < b.radius + c.radius) {
+                        b.score += c.value;
+                        coins.splice(index, 1);
+                    }
+                });
+            });
+
+            // Update particles & floating texts
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+
+            floatingTexts.forEach((ft, index) => {
+                ft.y += ft.vy;
+                ft.alpha -= 0.03;
+                if (ft.alpha <= 0) floatingTexts.splice(index, 1);
+            });
+        }
+
+        function spawnCoin() {
+            let rand = Math.random();
+            let chosen = coinTypes[0];
+            let cumulative = 0;
+            for (let ct of coinTypes) {
+                cumulative += ct.freq;
+                if (rand <= cumulative) {
+                    chosen = ct;
+                    break;
+                }
+            }
+
+            let x = Math.random() * (canvas.width - 60) + 30;
+            let y = Math.random() * (canvas.height - 60) + 30;
+            coins.push({ x, y, ...chosen });
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    color,
+                    alpha: 1,
+                    radius: Math.random() * 3 + 2
+                });
+            }
+        }
+
+        // --- RENDER GAME CANVAS ---
+        function renderGame() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Grid Background
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.2)';
+            ctx.lineWidth = 1;
+            let gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Draw Obstacles
+            obstacles.forEach(obs => {
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 8);
+                } else {
+                    ctx.rect(obs.x, obs.y, obs.w, obs.h);
+                }
+                ctx.fill();
+            });
+
+            // Draw Coins with bounce/sparkle
+            coins.forEach(c => {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radius + Math.sin(Date.now() / 150) * 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = c.color;
+                ctx.shadowColor = c.color;
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Draw Bots
+            bots.forEach(b => {
+                ctx.save();
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(b.skin.icon, b.x, b.y);
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '10px Outfit, sans-serif';
+                ctx.fillText(b.name, b.x, b.y + 22);
+                ctx.restore();
+            });
+
+            // Draw Player
+            ctx.save();
+            ctx.font = '30px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(gameState.selectedSkin.icon, player.x, player.y);
+            ctx.fillStyle = '#facc15';
+            ctx.font = 'bold 11px Outfit, sans-serif';
+            ctx.fillText(gameState.playerName, player.x, player.y + 24);
+            ctx.restore();
+
+            // Draw Floating Texts
+            floatingTexts.forEach(ft => {
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 16px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
+
+            // Draw Reactions
+            if (activeReaction && Date.now() < reactionTimer) {
+                ctx.save();
+                ctx.font = '32px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(activeReaction, player.x, player.y - 35);
+                ctx.restore();
+            }
+        }
+
+        // Main Loop
+        function gameLoop() {
+            updateGame();
+            renderGame();
+            requestAnimationFrame(gameLoop);
+        }
+        requestAnimationFrame(gameLoop);
+
+        // --- REACTIONS & END ROUND ---
+        function sendReaction(emoji) {
+            activeReaction = emoji;
+            reactionTimer = Date.now() + 2500;
+        }
+
+        function endRound() {
+            matchRunning = false;
+            matchPhase = 'roundover';
+            playSound('victory');
+
+            // Compile rankings
+            let standings = [
+                { name: gameState.playerName, score: gameState.score, isUser: true },
+                ...bots
+            ];
+            standings.sort((a, b) => b.score - a.score);
+
+            const winner = standings[0];
+            if (winner.isUser) {
+                gameState.totalWins++;
+                document.getElementById('winnerTitle').innerText = `${gameState.playerName} WINS!`;
+            } else {
+                document.getElementById('winnerTitle').innerText = `${winner.name} WINS!`;
+            }
+            document.getElementById('winnerCoinsSubtitle').innerText = `Collected ${winner.score} Coins`;
+
+            // Populate rankings list
+            const rankingsEl = document.getElementById('finalRankingsList');
+            rankingsEl.innerHTML = standings.map((s, idx) => `
+                <div class="flex justify-between items-center p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-sm">
+                    <span class="font-bold text-slate-300">#${idx+1} ${s.name}</span>
+                    <span class="font-black text-amber-400">${s.score} COINS</span>
+                </div>
+            `).join('');
+
+            // XP and level progression
+            gameState.xp += 50;
+            if (gameState.xp >= gameState.level * 100) {
+                gameState.level++;
+                gameState.xp = 0;
+            }
+            document.getElementById('hudLevel').innerText = gameState.level;
+            document.getElementById('hudXP').innerText = gameState.xp;
+
+            // Show Overlay & 3s countdown
+            document.getElementById('roundOverOverlay').classList.remove('hidden');
+            nextRoundCountdownVal = 3;
+            runNextRoundCountdown();
+        }
+
+        function runNextRoundCountdown() {
+            if (nextRoundCountdownVal > 0) {
+                document.getElementById('nextRoundCountdown').innerText = nextRoundCountdownVal;
+                nextRoundCountdownVal--;
+                setTimeout(runNextRoundCountdown, 1000);
+            } else {
+                startNewRound();
+            }
+        }
+
+        // --- MODALS & ACHIEVEMENTS ---
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'statsModal') {
+                document.getElementById('modalPlayerLevel').innerText = `Level ${gameState.level}`;
+                document.getElementById('modalXpBar').style.width = `${(gameState.xp / (gameState.level * 100)) * 100}%`;
+                document.getElementById('modalXpCurrent').innerText = gameState.xp;
+                document.getElementById('modalXpTarget').innerText = gameState.level * 100;
+                document.getElementById('statTotalWins').innerText = gameState.totalWins;
+                document.getElementById('statTotalCoins').innerText = gameState.totalCoins;
+            } else if (id === 'achievementsModal') {
+                const achList = document.getElementById('achievementsList');
+                achList.innerHTML = achievementsList.map(a => `
+                    <div class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-sm text-slate-200">${a.title}</div>
+                            <div class="text-xs text-slate-400">${a.desc}</div>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 rounded-full font-bold ${a.unlocked ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}">${a.unlocked ? 'Unlocked' : 'Locked'}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function toggleMiniLeaderboard() {
+            openModal('statsModal');
+        }
+
+        // Initial setup on load
+        window.onload = function() {
+            renderLobby();
+        };
     </script>
 </body>
 </html>
