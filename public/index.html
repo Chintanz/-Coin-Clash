@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🪙 Coin Clash | Arcade Multiplayer Experience</title>
+    <title>🪙 Coin Clash | Multiplayer Arcade Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script>
@@ -23,7 +23,6 @@
         body { font-family: 'Outfit', sans-serif; touch-action: manipulation; user-select: none; }
         .neon-glow { text-shadow: 0 0 10px rgba(168, 85, 247, 0.6), 0 0 20px rgba(99, 102, 241, 0.4); }
         .box-glow { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3); }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -40,51 +39,93 @@
     <div id="appContainer" class="w-full max-w-4xl mx-auto p-2 sm:p-4 flex flex-col items-center justify-center min-h-screen">
 
         <!-- SCREEN 1: LOBBY & SETUP -->
-        <div id="screenLobby" class="w-full max-w-lg bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 box-glow backdrop-blur-xl flex flex-col gap-6 animate-fadeIn">
-            <div class="text-center">
-                <h1 class="text-4xl sm:text-5xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-purple-400 to-indigo-500 neon-glow">
+        <div id="screenLobby" class="w-full max-w-xl bg-slate-900/95 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 box-glow backdrop-blur-xl flex flex-col gap-6 shadow-2xl relative overflow-hidden">
+            
+            <!-- Epic Banner Graphic representation inspired by artwork -->
+            <div class="relative bg-gradient-to-r from-amber-600/30 via-purple-600/30 to-indigo-600/30 p-5 rounded-2xl border border-amber-500/40 text-center shadow-inner">
+                <div class="absolute -top-3 right-4 bg-amber-400 text-slate-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest shadow-md">
+                    🏆 Can you dominate?
+                </div>
+                <h1 class="text-4xl sm:text-5xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 drop-shadow-lg">
                     🪙 COIN CLASH
                 </h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium">The Ultimate Fast-Paced Arcade Coin Arena</p>
+                <p class="text-amber-200/90 font-extrabold text-sm mt-1 uppercase tracking-wider">Think You Can Win? Prove It!</p>
+                <p class="text-slate-300 text-xs mt-1 italic">"Dive into Coin Clash, where every coin counts, every second matters, and rivals are waiting to steal your crown!"</p>
+            </div>
+
+            <!-- Quick Feature Badges -->
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center gap-1">
+                    <span class="text-lg">🎮</span>
+                    <span class="text-[10px] font-bold text-slate-300">Multiplayer Action</span>
+                </div>
+                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center gap-1">
+                    <span class="text-lg">🗺️</span>
+                    <span class="text-[10px] font-bold text-slate-300">Exciting Maps</span>
+                </div>
+                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex flex-col items-center gap-1">
+                    <span class="text-lg">⚡</span>
+                    <span class="text-[10px] font-bold text-slate-300">Epic Modes</span>
+                </div>
+            </div>
+
+            <!-- Invite Friends & Family Section -->
+            <div class="bg-gradient-to-br from-indigo-950/60 to-purple-950/60 border-2 border-indigo-500/40 rounded-2xl p-4 flex flex-col gap-3 shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div class="text-xs font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                        <span>👥</span> Invite Friends & Family Anywhere
+                    </div>
+                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-bold">Play Anytime</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="roomLinkInput" readonly class="w-full bg-slate-950 border border-indigo-500/40 rounded-xl px-3 py-2.5 text-xs text-indigo-200 font-mono select-all outline-none" value="Generating invite link...">
+                    <button onclick="copyRoomLink()" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black rounded-xl text-xs transition shadow-lg shrink-0">Copy</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <button onclick="shareViaWhatsApp()" class="py-2 bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
+                        💬 Share on WhatsApp
+                    </button>
+                    <button onclick="shareViaTelegram()" class="py-2 bg-sky-600/80 hover:bg-sky-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">
+                        ✈️ Share on Telegram
+                    </button>
+                </div>
             </div>
 
             <!-- Player Setup -->
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Choose Your Name</label>
-                    <input type="text" id="playerNameInput" maxlength="12" value="CHINTAN" class="w-full bg-slate-800 border-2 border-slate-700 focus:border-indigo-500 rounded-2xl px-4 py-3 text-lg font-bold tracking-wide outline-none transition text-center text-amber-300">
+                    <input type="text" id="playerNameInput" maxlength="12" value="CHINTAN" class="w-full bg-slate-800 border-2 border-slate-700 focus:border-amber-500 rounded-2xl px-4 py-3 text-lg font-bold tracking-wide outline-none transition text-center text-amber-300 shadow-inner">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Character Skin</label>
-                    <div id="skinSelector" class="grid grid-cols-4 gap-2">
+                    <div id="skinSelector" class="grid grid-cols-4 sm:grid-cols-7 gap-2">
                         <!-- Skin cards generated dynamically -->
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Arena Map</label>
-                    <div id="mapSelector" class="grid grid-cols-3 gap-2">
-                        <!-- Map cards generated dynamically -->
                     </div>
                 </div>
             </div>
 
-            <!-- Lobby Players Queue Preview -->
-            <div class="bg-slate-950/60 rounded-2xl p-4 border border-slate-800">
+            <!-- Lobby Players Queue Preview with Hide/Show Toggle -->
+            <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-800">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Room Players</span>
-                    <span id="playerCountBadge" class="text-xs bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded-full font-bold">4 / 6 Ready</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-300 uppercase">Room Players</span>
+                        <span id="playerCountBadge" class="text-xs bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-full font-bold">1 Player</span>
+                    </div>
+                    <button onclick="togglePlayerListVisibility()" id="togglePlayerListBtn" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/30">
+                        Hide List
+                    </button>
                 </div>
-                <div id="lobbyPlayerList" class="grid grid-cols-2 gap-2">
-                    <!-- Bots/Players preview -->
+                <div id="lobbyPlayerList" class="grid grid-cols-2 gap-2 transition-all duration-300">
+                    <!-- Players preview -->
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex flex-col gap-3">
-                <button onclick="startGameSession()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-black text-xl rounded-2xl shadow-xl transform active:scale-95 transition flex items-center justify-center gap-3">
-                    <span>🚀 START GAME</span>
+                <button onclick="startGameSession()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xl rounded-2xl shadow-xl transform active:scale-95 transition flex items-center justify-center gap-3 border-2 border-amber-300">
+                    <span>🚀 Jump In and Clash!</span>
                 </button>
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="openModal('achievementsModal')" class="py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-slate-700">
@@ -129,7 +170,7 @@
 
             <!-- Center Game Arena Canvas & Overlay -->
             <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-900 rounded-3xl overflow-hidden border-2 border-slate-800 box-glow shadow-2xl">
-                <!-- Countdown Overlay (3..2..1..GO) -->
+                <!-- Countdown Overlay -->
                 <div id="countdownOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md z-30 flex flex-col items-center justify-center transition-opacity duration-300">
                     <div id="countdownNumber" class="text-7xl sm:text-9xl font-black text-amber-400 neon-glow animate-bounce">3</div>
                     <div id="countdownText" class="text-xl sm:text-2xl font-bold text-slate-300 mt-4 uppercase tracking-widest">GET READY!</div>
@@ -143,16 +184,14 @@
                     
                     <div class="w-full max-w-sm bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-6 shadow-xl">
                         <div class="text-xs uppercase font-bold text-slate-400 mb-3 text-left">Final Standings</div>
-                        <div id="finalRankingsList" class="space-y-2">
-                            <!-- rankings inserted here -->
-                        </div>
+                        <div id="finalRankingsList" class="space-y-2"></div>
                     </div>
 
                     <div class="text-xs text-indigo-300 font-bold mb-2">+50 XP Earned</div>
                     <div class="text-slate-400 text-sm">Next round starts in <span id="nextRoundCountdown" class="text-amber-400 font-bold text-lg">3</span>...</div>
                 </div>
 
-                <!-- Event Announcement Banner (e.g. DOUBLE COINS) -->
+                <!-- Event Announcement Banner -->
                 <div id="eventBanner" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none hidden transition-all duration-300 bg-amber-500/90 text-slate-950 px-6 py-2 rounded-2xl font-black text-sm sm:text-base shadow-2xl border-2 border-amber-300 uppercase tracking-widest animate-pulse">
                     ⚡ DOUBLE COINS ACTIVE!
                 </div>
@@ -160,7 +199,7 @@
                 <!-- Canvas -->
                 <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
 
-                <!-- Floating Emoji Reactions Bar (Bottom Center of Canvas) -->
+                <!-- Floating Emoji Reactions Bar -->
                 <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-20 flex gap-1.5 bg-slate-950/80 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-800 shadow-xl">
                     <button onclick="sendReaction('😂')" class="hover:scale-125 transition text-xl p-1">😂</button>
                     <button onclick="sendReaction('😱')" class="hover:scale-125 transition text-xl p-1">😱</button>
@@ -171,24 +210,10 @@
                 </div>
             </div>
 
-            <!-- Controls & Mobile D-Pad / Powerups -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <!-- Power-ups Inventory -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Power-Ups</div>
-                    <div id="powerupSlots" class="flex gap-2">
-                        <!-- Power-up slots -->
-                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">⚡</div>
-                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">🧲</div>
-                        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-slate-500">🛡️</div>
-                    </div>
-                </div>
-
-                <!-- Touch D-Pad for Mobile / Quick Info -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs text-slate-400">
-                    <div>💡 <span class="font-bold text-slate-300">Tip:</span> Use Arrow Keys / WASD or Touch & Drag on canvas to move. Collect rare coins & powerups!</div>
-                    <button onclick="returnToLobby()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Quit</button>
-                </div>
+            <!-- Controls Info & Quit -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs text-slate-400">
+                <div>💡 <span class="font-bold text-slate-300">Multiplayer:</span> Use Arrow Keys / WASD or Touch & Drag to move and compete with friends online!</div>
+                <button onclick="returnToLobby()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition">Quit</button>
             </div>
         </div>
 
@@ -201,9 +226,7 @@
                 <h3 class="text-xl font-black text-amber-400">🏅 Achievements</h3>
                 <button onclick="closeModal('achievementsModal')" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
             </div>
-            <div id="achievementsList" class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                <!-- Achievements items inserted dynamically -->
-            </div>
+            <div id="achievementsList" class="space-y-3 max-h-80 overflow-y-auto pr-1"></div>
         </div>
     </div>
 
@@ -240,9 +263,32 @@
         </div>
     </div>
 
-    <!-- JavaScript Game Engine & Logic -->
-    <script>
-        // --- GAME STATE & DATA ---
+    <!-- Firebase & Multiplayer Game Engine -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'coin-clash-multiplayer-room';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        let db, auth, currentUser;
+        
+        let roomId = 'room_default';
+        try {
+            let urlParams = new URLSearchParams(window.location.search);
+            roomId = urlParams.get('room');
+            if (!roomId) {
+                roomId = 'room_' + Math.random().toString(36).substring(2, 8);
+                if (window.location.protocol.startsWith('http')) {
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?room=' + roomId;
+                    window.history.replaceState({path: newUrl}, '', newUrl);
+                }
+            }
+        } catch (e) {
+            roomId = 'room_' + Math.random().toString(36).substring(2, 8);
+        }
+
         const skins = [
             { id: 'ninja', name: 'Ninja', icon: '🥷', color: '#10b981' },
             { id: 'robot', name: 'Robot', icon: '🤖', color: '#3b82f6' },
@@ -253,31 +299,17 @@
             { id: 'golden', name: 'Gold', icon: '💎', color: '#fbbf24' }
         ];
 
-        const maps = [
-            { id: 'arena', name: 'Coin Arena', desc: 'Simple open map' },
-            { id: 'maze', name: 'Maze Style', desc: 'Walls & narrow passages' },
-            { id: 'danger', name: 'Danger Zone', desc: 'Hazardous areas spawn' }
-        ];
-
         const coinTypes = [
-            { type: 'gold', name: 'Gold', value: 1, color: '#facc15', freq: 0.55, radius: 10 },
+            { type: 'gold', name: 'Gold', value: 1, color: '#facc15', freq: 0.6, radius: 10 },
             { type: 'blue', name: 'Blue', value: 3, color: '#38bdf8', freq: 0.25, radius: 12 },
-            { type: 'purple', name: 'Purple', value: 5, color: '#c084fc', freq: 0.12, radius: 14 },
-            { type: 'red', name: 'Red', value: 10, color: '#f87171', freq: 0.06, radius: 16 },
-            { type: 'diamond', name: 'Diamond', value: 25, color: '#34d399', freq: 0.02, radius: 18 }
-        ];
-
-        const achievementsList = [
-            { id: 'collector', title: 'Coin Collector', desc: 'Collect 50 coins total', target: 50, progress: 0, unlocked: false },
-            { id: 'millionaire', title: 'Coin Master', desc: 'Collect 250 coins total', target: 250, progress: 0, unlocked: false },
-            { id: 'champion', title: 'Champion', desc: 'Win 3 rounds', target: 3, progress: 0, unlocked: false },
-            { id: 'speed', title: 'Speed Demon', desc: 'Collect 10 coins in 5 seconds', target: 10, progress: 0, unlocked: false }
+            { type: 'purple', name: 'Purple', value: 5, color: '#c084fc', freq: 0.1, radius: 14 },
+            { type: 'red', name: 'Red', value: 10, color: '#f87171', freq: 0.04, radius: 16 },
+            { type: 'diamond', name: 'Diamond', value: 25, color: '#34d399', freq: 0.01, radius: 18 }
         ];
 
         let gameState = {
             playerName: 'CHINTAN',
             selectedSkin: skins[0],
-            selectedMap: maps[0],
             score: 0,
             xp: 0,
             level: 1,
@@ -286,150 +318,153 @@
             soundEnabled: true
         };
 
-        // Runtime Match State
         let matchRunning = false;
-        let matchPhase = 'ready'; // ready, countdown, playing, roundover
+        let matchPhase = 'ready';
         let matchTimer = 60;
-        let currentEvent = null; // null, double, rain, danger
-        let eventTimer = 0;
         let canvas, ctx;
-        let player = { x: 0, y: 0, radius: 18, speed: 5, vx: 0, vy: 0, shield: false, speedBoost: false, magnet: false };
-        let bots = [];
+        let player = { x: 100, y: 100, radius: 18, speed: 5 };
+        let remotePlayers = {};
         let coins = [];
         let particles = [];
         let floatingTexts = [];
-        let obstacles = [];
         let keys = {};
         let touchTarget = null;
-        let countdownValue = 3;
-        let nextRoundCountdownVal = 3;
         let activeReaction = null;
         let reactionTimer = 0;
+        let playerListHidden = false;
 
-        // --- WEB AUDIO API SOUNDS ---
+        // Initialize Firebase
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                currentUser = auth.currentUser;
+                startPlayerSync();
+            };
+            initAuth();
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+
+        function getRoomShareUrl() {
+            try {
+                if (window.location.protocol.startsWith('http')) {
+                    return window.location.href.split('?')[0] + '?room=' + roomId;
+                }
+            } catch(e) {}
+            return 'https://coin-clash.app/play?room=' + roomId;
+        }
+
+        window.copyRoomLink = function() {
+            const linkInput = document.getElementById('roomLinkInput');
+            linkInput.select();
+            document.execCommand('copy');
+            alertCustom("Invite link copied! Share with your friends & family.");
+        }
+
+        window.shareViaWhatsApp = function() {
+            const url = encodeURIComponent(getRoomShareUrl());
+            const text = encodeURIComponent("🪙 Join my Coin Clash room and let's see who can collect the most coins! Play here: ");
+            window.open(`https://api.whatsapp.com/send?text=${text}${url}`, '_blank');
+        }
+
+        window.shareViaTelegram = function() {
+            const url = encodeURIComponent(getRoomShareUrl());
+            const text = encodeURIComponent("🪙 Join my Coin Clash room and let's see who can win! ");
+            window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+        }
+
+        window.togglePlayerListVisibility = function() {
+            playerListHidden = !playerListHidden;
+            const listEl = document.getElementById('lobbyPlayerList');
+            const btnEl = document.getElementById('togglePlayerListBtn');
+            if(playerListHidden) {
+                listEl.classList.add('hidden');
+                btnEl.innerText = 'Show List';
+            } else {
+                listEl.classList.remove('hidden');
+                btnEl.innerText = 'Hide List';
+            }
+        }
+
+        function alertCustom(msg) {
+            const banner = document.getElementById('eventBanner');
+            banner.innerText = msg;
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 3000);
+        }
+
+        // --- AUDIO API ---
         let audioCtx = null;
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        window.toggleSound = function() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('soundIcon').innerText = gameState.soundEnabled ? '🔊' : '🔇';
+            document.getElementById('soundText').innerText = gameState.soundEnabled ? 'Sound ON' : 'Sound OFF';
         }
 
         function playSound(type) {
             if (!gameState.soundEnabled) return;
             initAudio();
             if (!audioCtx) return;
-
             try {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 const now = audioCtx.currentTime;
-
                 if (type === 'coin') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(587.33, now); // D5
+                    osc.frequency.setValueAtTime(587.33, now);
                     osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
                     gain.gain.setValueAtTime(0.3, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                } else if (type === 'rare') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.08);
-                    osc.frequency.setValueAtTime(880, now + 0.16);
-                    gain.gain.setValueAtTime(0.4, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now);
-                    osc.stop(now + 0.3);
+                    osc.start(now); osc.stop(now + 0.15);
                 } else if (type === 'victory') {
-                    osc.type = 'sine';
-                    const notes = [523.25, 659.25, 783.99, 1046.50];
-                    notes.forEach((freq, idx) => {
-                        const o = audioCtx.createOscillator();
-                        const g = audioCtx.createGain();
-                        o.connect(g);
-                        g.connect(audioCtx.destination);
-                        o.frequency.setValueAtTime(freq, now + idx * 0.12);
-                        g.gain.setValueAtTime(0.3, now + idx * 0.12);
-                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
-                        o.start(now + idx * 0.12);
-                        o.stop(now + idx * 0.12 + 0.3);
-                    });
-                } else if (type === 'warning') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.setValueAtTime(200, now + 0.1);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
+                    osc.frequency.setValueAtTime(523.25, now);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) {}
         }
 
-        function toggleSound() {
-            gameState.soundEnabled = !gameState.soundEnabled;
-            document.getElementById('soundIcon').innerText = gameState.soundEnabled ? '🔊' : '🔇';
-            document.getElementById('soundText').innerText = gameState.soundEnabled ? 'Sound ON' : 'Sound OFF';
-        }
-
-        // --- INIT LOBBY UI ---
+        // --- RENDER LOBBY ---
         function renderLobby() {
-            // Skins
+            const linkInput = document.getElementById('roomLinkInput');
+            linkInput.value = getRoomShareUrl();
+
             const skinContainer = document.getElementById('skinSelector');
             skinContainer.innerHTML = skins.map(s => `
-                <button onclick="selectSkin('${s.id}')" class="p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition transform hover:scale-105 ${gameState.selectedSkin.id === s.id ? 'border-indigo-500 bg-indigo-500/20 shadow-lg' : 'border-slate-800 bg-slate-900'}">
+                <button onclick="selectSkin('${s.id}')" class="p-2.5 rounded-2xl border-2 flex flex-col items-center gap-1 transition transform hover:scale-105 ${gameState.selectedSkin.id === s.id ? 'border-amber-500 bg-amber-500/20 shadow-lg' : 'border-slate-800 bg-slate-900'}">
                     <span class="text-2xl">${s.icon}</span>
-                    <span class="text-[10px] font-bold text-slate-300">${s.name}</span>
+                    <span class="text-[9px] font-bold text-slate-300">${s.name}</span>
                 </button>
-            `).join('');
-
-            // Maps
-            const mapContainer = document.getElementById('mapSelector');
-            mapContainer.innerHTML = maps.map(m => `
-                <button onclick="selectMap('${m.id}')" class="p-3 rounded-2xl border-2 flex flex-col items-center text-center gap-1 transition transform hover:scale-105 ${gameState.selectedMap.id === m.id ? 'border-amber-500 bg-amber-500/20 shadow-lg' : 'border-slate-800 bg-slate-900'}">
-                    <span class="text-xs font-black text-amber-300">${m.name}</span>
-                    <span class="text-[9px] text-slate-400">${m.desc}</span>
-                </button>
-            `).join('');
-
-            // Lobby Bot Preview List
-            const botList = document.getElementById('lobbyPlayerList');
-            const previewBots = [
-                { name: gameState.playerName, skin: gameState.selectedSkin, isUser: true },
-                { name: 'Alex', skin: skins[1] },
-                { name: 'Sam', skin: skins[2] },
-                { name: 'Jamie', skin: skins[3] }
-            ];
-            botList.innerHTML = previewBots.map(b => `
-                <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800">
-                    <span class="text-lg">${b.skin.icon}</span>
-                    <span class="text-xs font-bold ${b.isUser ? 'text-amber-400' : 'text-slate-300'}">${b.name}</span>
-                </div>
             `).join('');
         }
 
-        function selectSkin(id) {
+        window.selectSkin = function(id) {
             gameState.selectedSkin = skins.find(s => s.id === id);
             renderLobby();
         }
 
-        function selectMap(id) {
-            gameState.selectedMap = maps.find(m => m.id === id);
-            renderLobby();
-        }
-
-        // --- START GAME SESSION ---
-        function startGameSession() {
+        // --- START GAME ---
+        window.startGameSession = function() {
             const nameInput = document.getElementById('playerNameInput').value.trim();
             if (nameInput) gameState.playerName = nameInput;
 
             document.getElementById('screenLobby').classList.add('hidden');
             document.getElementById('screenGame').classList.remove('hidden');
 
-            // HUD update
             document.getElementById('hudPlayerName').innerText = gameState.playerName;
             document.getElementById('hudPlayerSkin').innerText = gameState.selectedSkin.icon;
             document.getElementById('hudLevel').innerText = gameState.level;
@@ -439,21 +474,19 @@
             startNewRound();
         }
 
-        function returnToLobby() {
+        window.returnToLobby = function() {
             matchRunning = false;
             document.getElementById('screenGame').classList.add('hidden');
             document.getElementById('screenLobby').classList.remove('hidden');
             renderLobby();
         }
 
-        // --- CANVAS & GAME LOOP SETUP ---
         function initCanvas() {
             canvas = document.getElementById('gameCanvas');
             ctx = canvas.getContext('2d');
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
-            // Controls listeners
             window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
             window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
@@ -480,36 +513,15 @@
             matchPhase = 'countdown';
             matchTimer = 60;
             gameState.score = 0;
-            currentEvent = null;
             coins = [];
             particles = [];
             floatingTexts = [];
 
-            // Position player at center
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
-            player.vx = 0;
-            player.vy = 0;
+            player.x = Math.random() * (canvas.width - 100) + 50;
+            player.y = Math.random() * (canvas.height - 100) + 50;
 
-            // Setup Bots
-            bots = [
-                { name: 'Alex', skin: skins[1], x: canvas.width * 0.2, y: canvas.height * 0.2, score: 0, vx: 2, vy: 1, radius: 18 },
-                { name: 'Sam', skin: skins[2], x: canvas.width * 0.8, y: canvas.height * 0.2, score: 0, vx: -1, vy: 2, radius: 18 },
-                { name: 'Jamie', skin: skins[3], x: canvas.width * 0.5, y: canvas.height * 0.8, score: 0, vx: 1.5, vy: -1.5, radius: 18 }
-            ];
+            for(let i=0; i<15; i++) spawnCoin();
 
-            // Build obstacles based on map
-            obstacles = [];
-            if (gameState.selectedMap.id === 'maze') {
-                obstacles.push(
-                    { x: canvas.width * 0.3, y: canvas.height * 0.3, w: 20, h: 150 },
-                    { x: canvas.width * 0.7, y: canvas.height * 0.5, w: 20, h: 150 },
-                    { x: canvas.width * 0.4, y: canvas.height * 0.7, w: 200, h: 20 }
-                );
-            }
-
-            // Countdown sequence
-            countdownValue = 3;
             document.getElementById('countdownOverlay').classList.remove('hidden');
             document.getElementById('roundOverOverlay').classList.add('hidden');
             document.getElementById('hudScore').innerText = '0';
@@ -518,28 +530,27 @@
         }
 
         function runCountdown() {
-            if (countdownValue > 0) {
-                document.getElementById('countdownNumber').innerText = countdownValue;
-                document.getElementById('countdownText').innerText = countdownValue === 3 ? '🟢 GET READY!' : 'READY...';
-                playSound('warning');
-                countdownValue--;
-                setTimeout(runCountdown, 1000);
-            } else {
-                document.getElementById('countdownNumber').innerText = 'GO!';
-                document.getElementById('countdownText').innerText = 'COLLECT COINS!';
-                playSound('rare');
-                setTimeout(() => {
-                    document.getElementById('countdownOverlay').classList.add('hidden');
-                    matchPhase = 'playing';
-                    startRoundTimer();
-                }, 600);
-            }
+            let count = 3;
+            const cdInterval = setInterval(() => {
+                if(count > 0) {
+                    document.getElementById('countdownNumber').innerText = count;
+                    count--;
+                } else {
+                    clearInterval(cdInterval);
+                    document.getElementById('countdownNumber').innerText = 'GO!';
+                    setTimeout(() => {
+                        document.getElementById('countdownOverlay').classList.add('hidden');
+                        matchPhase = 'playing';
+                        startTimer();
+                    }, 500);
+                }
+            }, 1000);
         }
 
-        function startRoundTimer() {
-            const timerInterval = setInterval(() => {
-                if (!matchRunning || matchPhase !== 'playing') {
-                    clearInterval(timerInterval);
+        function startTimer() {
+            const tInterval = setInterval(() => {
+                if(!matchRunning || matchPhase !== 'playing') {
+                    clearInterval(tInterval);
                     return;
                 }
                 matchTimer--;
@@ -547,46 +558,73 @@
                 let secs = matchTimer % 60;
                 document.getElementById('hudTimer').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
 
-                // Phase events
-                if (matchTimer === 45) {
-                    triggerEvent('double', '⚡ DOUBLE COINS ACTIVE!');
-                } else if (matchTimer === 10) {
-                    triggerEvent('rain', '🌧️ COIN RAIN EVENT!');
-                    playSound('warning');
-                } else if (matchTimer === 5) {
-                    document.getElementById('hudPhaseBadge').innerText = '🔥 FINAL 5 SECONDS!';
-                    playSound('warning');
-                }
-
-                if (matchTimer <= 0) {
-                    clearInterval(timerInterval);
+                if(matchTimer <= 0) {
+                    clearInterval(tInterval);
                     endRound();
                 }
             }, 1000);
         }
 
-        function triggerEvent(type, text) {
-            currentEvent = type;
-            const banner = document.getElementById('eventBanner');
-            banner.innerText = text;
-            banner.classList.remove('hidden');
-            setTimeout(() => banner.classList.add('hidden'), 5000);
-
-            if (type === 'rain') {
-                for (let i = 0; i < 25; i++) spawnCoin();
+        function spawnCoin() {
+            let rand = Math.random();
+            let chosen = coinTypes[0];
+            let cumulative = 0;
+            for (let ct of coinTypes) {
+                cumulative += ct.freq;
+                if (rand <= cumulative) { chosen = ct; break; }
             }
+            coins.push({
+                id: Math.random().toString(36).substring(2,9),
+                x: Math.random() * (canvas.width - 50) + 25,
+                y: Math.random() * (canvas.height - 50) + 25,
+                ...chosen
+            });
         }
 
-        // --- GAME TICK & UPDATE ---
+        // --- FIREBASE SYNC ---
+        function startPlayerSync() {
+            if(!db || !currentUser) return;
+            const roomCol = collection(db, 'artifacts', appId, 'public', 'data', roomId + '_players');
+            
+            onSnapshot(roomCol, (snapshot) => {
+                remotePlayers = {};
+                let activeList = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if(data.uid !== currentUser.uid) {
+                        remotePlayers[data.uid] = data;
+                    }
+                    activeList.push(data);
+                });
+
+                document.getElementById('playerCountBadge').innerText = `${activeList.length} Connected`;
+                const lobbyList = document.getElementById('lobbyPlayerList');
+                lobbyList.innerHTML = activeList.map(p => `
+                    <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800">
+                        <span class="text-lg">${p.skinIcon || '🥷'}</span>
+                        <span class="text-xs font-bold text-amber-300 truncate">${p.name}</span>
+                    </div>
+                `).join('');
+            }, (err) => console.error(err));
+        }
+
+        function updateServerPosition() {
+            if(!db || !currentUser || !matchRunning) return;
+            const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', roomId + '_players', currentUser.uid);
+            setDoc(userDocRef, {
+                uid: currentUser.uid,
+                name: gameState.playerName,
+                skinIcon: gameState.selectedSkin.icon,
+                x: player.x,
+                y: player.y,
+                score: gameState.score,
+                reaction: activeReaction && Date.now() < reactionTimer ? activeReaction : ''
+            }, { merge: true }).catch(e => {});
+        }
+
         function updateGame() {
             if (!matchRunning || matchPhase !== 'playing') return;
 
-            // Spawn coins dynamically
-            if (Math.random() < 0.12 && coins.length < 40) {
-                spawnCoin();
-            }
-
-            // Player movement (Keyboard or Mouse/Touch)
             let speed = player.speed;
             let dx = 0, dy = 0;
             if (keys['arrowup'] || keys['w']) dy -= speed;
@@ -595,8 +633,7 @@
             if (keys['arrowright'] || keys['d']) dx += speed;
 
             if (dx !== 0 || dy !== 0) {
-                player.x += dx;
-                player.y += dy;
+                player.x += dx; player.y += dy;
             } else if (touchTarget) {
                 let tdx = touchTarget.x - player.x;
                 let tdy = touchTarget.y - player.y;
@@ -607,174 +644,62 @@
                 }
             }
 
-            // Boundary collision
             player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
             player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
 
-            // Obstacle collision
-            obstacles.forEach(obs => {
-                if (player.x + player.radius > obs.x && player.x - player.radius < obs.x + obs.w &&
-                    player.y + player.radius > obs.y && player.y - player.radius < obs.y + obs.h) {
-                    player.x -= dx;
-                    player.y -= dy;
-                }
-            });
+            updateServerPosition();
 
-            // Bot movement AI
-            bots.forEach(b => {
-                b.x += b.vx;
-                b.y += b.vy;
-                if (b.x < b.radius || b.x > canvas.width - b.radius) b.vx *= -1;
-                if (b.y < b.radius || b.y > canvas.height - b.radius) b.vy *= -1;
-                if (Math.random() < 0.05) {
-                    b.vx = (Math.random() - 0.5) * 4;
-                    b.vy = (Math.random() - 0.5) * 4;
-                }
-            });
-
-            // Coin collection check (Player)
             coins.forEach((c, index) => {
                 let dist = Math.hypot(player.x - c.x, player.y - c.y);
                 if (dist < player.radius + c.radius) {
-                    let val = c.value * (currentEvent === 'double' ? 2 : 1);
-                    gameState.score += val;
-                    gameState.totalCoins += val;
+                    gameState.score += c.value;
+                    gameState.totalCoins += c.value;
                     document.getElementById('hudScore').innerText = gameState.score;
-                    playSound(c.value >= 10 ? 'rare' : 'coin');
-
-                    // Floating text
-                    floatingTexts.push({ x: c.x, y: c.y, text: `+${val}`, color: c.color, alpha: 1, vy: -1.5 });
-                    // Particles
-                    createParticles(c.x, c.y, c.color);
-
+                    playSound('coin');
                     coins.splice(index, 1);
+                    if(coins.length < 15) spawnCoin();
                 }
             });
-
-            // Bot coin collection
-            coins.forEach((c, index) => {
-                bots.forEach(b => {
-                    let dist = Math.hypot(b.x - c.x, b.y - c.y);
-                    if (dist < b.radius + c.radius) {
-                        b.score += c.value;
-                        coins.splice(index, 1);
-                    }
-                });
-            });
-
-            // Update particles & floating texts
-            particles.forEach((p, index) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha -= 0.02;
-                if (p.alpha <= 0) particles.splice(index, 1);
-            });
-
-            floatingTexts.forEach((ft, index) => {
-                ft.y += ft.vy;
-                ft.alpha -= 0.03;
-                if (ft.alpha <= 0) floatingTexts.splice(index, 1);
-            });
         }
 
-        function spawnCoin() {
-            let rand = Math.random();
-            let chosen = coinTypes[0];
-            let cumulative = 0;
-            for (let ct of coinTypes) {
-                cumulative += ct.freq;
-                if (rand <= cumulative) {
-                    chosen = ct;
-                    break;
-                }
-            }
-
-            let x = Math.random() * (canvas.width - 60) + 30;
-            let y = Math.random() * (canvas.height - 60) + 30;
-            coins.push({ x, y, ...chosen });
-        }
-
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    color,
-                    alpha: 1,
-                    radius: Math.random() * 3 + 2
-                });
-            }
-        }
-
-        // --- RENDER GAME CANVAS ---
         function renderGame() {
-            if (!ctx) return;
+            if (!ctx || !canvas) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Grid Background
             ctx.strokeStyle = 'rgba(51, 65, 85, 0.2)';
             ctx.lineWidth = 1;
-            let gridSize = 40;
-            for (let x = 0; x < canvas.width; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
+            for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
 
-            // Draw Obstacles
-            obstacles.forEach(obs => {
-                ctx.fillStyle = '#334155';
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 8);
-                } else {
-                    ctx.rect(obs.x, obs.y, obs.w, obs.h);
-                }
-                ctx.fill();
-            });
-
-            // Draw Coins with bounce/sparkle
             coins.forEach(c => {
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(c.x, c.y, c.radius + Math.sin(Date.now() / 150) * 1.5, 0, Math.PI * 2);
+                ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
                 ctx.fillStyle = c.color;
                 ctx.shadowColor = c.color;
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 10;
                 ctx.fill();
-                ctx.lineWidth = 2;
                 ctx.strokeStyle = '#ffffff';
                 ctx.stroke();
                 ctx.restore();
             });
 
-            // Draw Particles
-            particles.forEach(p => {
+            Object.values(remotePlayers).forEach(rp => {
                 ctx.save();
-                ctx.globalAlpha = p.alpha;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-                ctx.restore();
-            });
-
-            // Draw Bots
-            bots.forEach(b => {
-                ctx.save();
-                ctx.font = '24px sans-serif';
+                ctx.font = '28px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(b.skin.icon, b.x, b.y);
+                ctx.fillText(rp.skinIcon || '🥷', rp.x, rp.y);
                 ctx.fillStyle = '#cbd5e1';
                 ctx.font = '10px Outfit, sans-serif';
-                ctx.fillText(b.name, b.x, b.y + 22);
+                ctx.fillText(rp.name, rp.x, rp.y + 22);
+                if(rp.reaction) {
+                    ctx.font = '24px sans-serif';
+                    ctx.fillText(rp.reaction, rp.x, rp.y - 30);
+                }
                 ctx.restore();
             });
 
-            // Draw Player
             ctx.save();
             ctx.font = '30px sans-serif';
             ctx.textAlign = 'center';
@@ -783,30 +708,13 @@
             ctx.fillStyle = '#facc15';
             ctx.font = 'bold 11px Outfit, sans-serif';
             ctx.fillText(gameState.playerName, player.x, player.y + 24);
-            ctx.restore();
-
-            // Draw Floating Texts
-            floatingTexts.forEach(ft => {
-                ctx.save();
-                ctx.globalAlpha = ft.alpha;
-                ctx.fillStyle = ft.color;
-                ctx.font = 'bold 16px Outfit, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(ft.text, ft.x, ft.y);
-                ctx.restore();
-            });
-
-            // Draw Reactions
             if (activeReaction && Date.now() < reactionTimer) {
-                ctx.save();
-                ctx.font = '32px sans-serif';
-                ctx.textAlign = 'center';
+                ctx.font = '28px sans-serif';
                 ctx.fillText(activeReaction, player.x, player.y - 35);
-                ctx.restore();
             }
+            ctx.restore();
         }
 
-        // Main Loop
         function gameLoop() {
             updateGame();
             renderGame();
@@ -814,8 +722,7 @@
         }
         requestAnimationFrame(gameLoop);
 
-        // --- REACTIONS & END ROUND ---
-        function sendReaction(emoji) {
+        window.sendReaction = function(emoji) {
             activeReaction = emoji;
             reactionTimer = Date.now() + 2500;
         }
@@ -825,23 +732,16 @@
             matchPhase = 'roundover';
             playSound('victory');
 
-            // Compile rankings
             let standings = [
-                { name: gameState.playerName, score: gameState.score, isUser: true },
-                ...bots
+                { name: gameState.playerName, score: gameState.score },
+                ...Object.values(remotePlayers).map(rp => ({ name: rp.name, score: rp.score || 0 }))
             ];
             standings.sort((a, b) => b.score - a.score);
 
             const winner = standings[0];
-            if (winner.isUser) {
-                gameState.totalWins++;
-                document.getElementById('winnerTitle').innerText = `${gameState.playerName} WINS!`;
-            } else {
-                document.getElementById('winnerTitle').innerText = `${winner.name} WINS!`;
-            }
+            document.getElementById('winnerTitle').innerText = `${winner.name} WINS!`;
             document.getElementById('winnerCoinsSubtitle').innerText = `Collected ${winner.score} Coins`;
 
-            // Populate rankings list
             const rankingsEl = document.getElementById('finalRankingsList');
             rankingsEl.innerHTML = standings.map((s, idx) => `
                 <div class="flex justify-between items-center p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-sm">
@@ -850,33 +750,25 @@
                 </div>
             `).join('');
 
-            // XP and level progression
             gameState.xp += 50;
-            if (gameState.xp >= gameState.level * 100) {
-                gameState.level++;
-                gameState.xp = 0;
-            }
+            if (gameState.xp >= gameState.level * 100) { gameState.level++; gameState.xp = 0; }
             document.getElementById('hudLevel').innerText = gameState.level;
             document.getElementById('hudXP').innerText = gameState.xp;
 
-            // Show Overlay & 3s countdown
             document.getElementById('roundOverOverlay').classList.remove('hidden');
-            nextRoundCountdownVal = 3;
-            runNextRoundCountdown();
+            let nextVal = 3;
+            const nextInterval = setInterval(() => {
+                if (nextVal > 0) {
+                    document.getElementById('nextRoundCountdown').innerText = nextVal;
+                    nextVal--;
+                } else {
+                    clearInterval(nextInterval);
+                    startNewRound();
+                }
+            }, 1000);
         }
 
-        function runNextRoundCountdown() {
-            if (nextRoundCountdownVal > 0) {
-                document.getElementById('nextRoundCountdown').innerText = nextRoundCountdownVal;
-                nextRoundCountdownVal--;
-                setTimeout(runNextRoundCountdown, 1000);
-            } else {
-                startNewRound();
-            }
-        }
-
-        // --- MODALS & ACHIEVEMENTS ---
-        function openModal(id) {
+        window.openModal = function(id) {
             document.getElementById(id).classList.remove('hidden');
             if (id === 'statsModal') {
                 document.getElementById('modalPlayerLevel').innerText = `Level ${gameState.level}`;
@@ -885,29 +777,17 @@
                 document.getElementById('modalXpTarget').innerText = gameState.level * 100;
                 document.getElementById('statTotalWins').innerText = gameState.totalWins;
                 document.getElementById('statTotalCoins').innerText = gameState.totalCoins;
-            } else if (id === 'achievementsModal') {
-                const achList = document.getElementById('achievementsList');
-                achList.innerHTML = achievementsList.map(a => `
-                    <div class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-sm text-slate-200">${a.title}</div>
-                            <div class="text-xs text-slate-400">${a.desc}</div>
-                        </div>
-                        <span class="text-xs px-2.5 py-1 rounded-full font-bold ${a.unlocked ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}">${a.unlocked ? 'Unlocked' : 'Locked'}</span>
-                    </div>
-                `).join('');
             }
         }
 
-        function closeModal(id) {
+        window.closeModal = function(id) {
             document.getElementById(id).classList.add('hidden');
         }
 
-        function toggleMiniLeaderboard() {
+        window.toggleMiniLeaderboard = function() {
             openModal('statsModal');
         }
 
-        // Initial setup on load
         window.onload = function() {
             renderLobby();
         };
